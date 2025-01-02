@@ -1,13 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
-#define forever while (TRUE)
-#define X 45
-#define Y 184
+#include <unistd.h>
+#include "header.h"
 
-unsigned int atts[X][Y][10];
-char map[X][Y];
-int delable[X][Y];
 char normalch[100] = {
     32, 33, 34, 35, 36, 37, 38, 39,
     40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
@@ -24,114 +20,223 @@ char numberch[11] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0
 };
 
-void init_screen() {
-    initscr();
-    noecho();
-    keypad(stdscr, TRUE);
-    for (int i = 0; i < X; i++) {
-        for (int j = 0; j < Y; j++) {
-            map[i][j] = ' ';
-            delable[i][j] = 1;
-        }
-    }
-    //attron(A_BLINK);
-}
-
-void end_screen() {
-    endwin();
-}
-
-void print_all() {
-    for (int i = 0; i < X; i++) {
-        if (~i & 1) {
-            attron(A_BOLD);
-        }
-        for (int j = 0; j < Y; j++) {
-            mvaddch(i, j, map[i][j]);
-        }
-        if (~i & 1) {
-            attroff(A_BOLD);
-        }
-    }
-}
-
-void refresh_all() {
-    for (int i = 0; i < X; i++) {
-        for (int j = 0; j < Y; j++) {
-            if (delable[i][j]) {
-                map[i][j] = ' ';
-            }
-        }
-    }
-    clear();
-    print_all();
-}
-
-void print_in(int x, int y, char *string, int dela) {
-    int nx = x, ny = y, len = strlen(string);
-    for (int i = 0; i < len; i++) {
-        //mvaddch(nx, ny, string[i]);
-        map[nx][ny] = string[i];
-        delable[nx][ny] = dela;
-        ny++;
-    }
-}
-
 void invalidch_error() {
-    print_in(X - 1, 0, "Invalid character", 1);
-    print_all();
+    print_in(X - 1, 0, "Invalid character", 1, error_delay);
 }
 
 void tooshort_error(int lim) {
     char mess[50] = "Too short!! at least ";
     sprintf(mess + strlen(mess), "%d", lim);
-    //print_in(X - 2, 0, mess, 1);
     strcat(mess, " characters are needed.");
-    print_in(X - 1, 0, mess, 1);
-    print_all();
+    print_in(X - 1, 0, mess, 1, error_delay);
 }
 
 void toolong_error(int lim) {
     char mess[50] = "Too long!! at most ";
     sprintf(mess + strlen(mess), "%d", lim);
     strcat(mess, " characters are needed.");
-    print_in(X - 1, 0, mess, 1);
-    print_all();
-
+    print_in(X - 1, 0, mess, 1, error_delay);
 }
 
-char *get_line(int x, int y, char *validch, int min, int max, int hide) {
-    move(x, y);
-    //char name[Y];
+void alreadyexist_error() {
+    print_in(X - 1, 0, "This name already exist! Try again!", 1, error_delay);
+}
+
+void notvalidemail_error() {
+    print_in(X - 1, 0, "The email format is not correct. It should be like \"xx@yy.zz", 1, error_delay);
+}
+
+void notvalidpassword_error() {
+    print_in(X - 1, 0, "Password should contains at least one digit, one capital letter and one small letter", 1, error_delay);
+}
+
+int is_new_user(char *line) {
+    FILE *players = fopen("players.txt", "r");
+    if (players == NULL)
+        return 1;
+    char name[100], email[100], password[100];
+    while (fscanf(players, "{\n\tname: %s\n\temail: %*s\n\tpassword: %*s\n}\n", name) == 1) {
+        if (strcmp(line, name) == 0) {
+            fclose(players);
+            return 0;
+        }
+    }
+    fclose(players);
+    return 1;
+}
+
+char *get_name(int x, int y, char *validch, int min, int max) {
+    char *line = (char *) calloc(Y, sizeof(char));
+    int size = 0, c;
+    while (TRUE) {
+        c = getch();
+        refresh_all();
+        if (c == 10) { // '\n'
+            if (size < min) {
+                tooshort_error(min);
+            }
+            else if (max < size) {
+                toolong_error(max);
+            }
+            else {
+                if (is_new_user(line)) {
+                    break;
+                }
+                else {
+                    alreadyexist_error();
+                }
+            }
+        }
+        else if ((c < 0 || c >= 128) && c != 263) {
+            invalidch_error();
+        }
+        else if (c == 263) {
+            size--;
+            if (size < 0)
+                size = 0;
+
+            line[size] = '\0';
+        }
+        else {
+            int valid = 0;
+            for (int i = 0; i < strlen(validch); i++) {
+                valid |= c == validch[i];
+            }
+            
+            if (valid) {
+                line[size] = c;
+                size++;
+
+                line[size] = '\0';
+            }
+            else {
+                invalidch_error();
+            }
+        }
+        print_in(x, y - size / 2, line, 1, 0);
+        print_all();
+    }
+    print_in(x, y - size / 2, line, 0, 0);
+    return line;
+}
+
+int is_correct_email(char *line) {
+    char c = '@';
+    int ht = 0, cid = 0, len = strlen(line);
+    for (int i = 0; i < len; i++) {
+        if (c == line[i]) {
+            ht++;
+            cid = i;
+        }
+    }
+    if (ht != 1 || cid == 0)
+        return 0;
+    
+    char c2 = '.';
+    int c2id = -1;
+    for (int i = len - 1; i > cid; i--) {
+        if (c2 == line[i]) {
+            c2id = i;
+            break;
+        }
+    }
+    if (c2id == -1 || c2id - cid == 1 || c2id == len - 1)
+        return 0;
+
+    return 1;
+}
+
+char *get_email(int x, int y, char *validch) {
+    char *line = (char *) calloc(Y, sizeof(char));
+    int size = 0, c;
+    while (TRUE) {
+        c = getch();
+        refresh_all();
+        if (c == 10) { // '\n'
+            if (is_correct_email(line)) {
+                break;
+            }
+            else {
+                notvalidemail_error();
+            }
+        }
+        else if ((c < 0 || c >= 128) && c != 263) {
+            invalidch_error();
+        }
+        else if (c == 263) {
+            size--;
+            if (size < 0)
+                size = 0;
+
+            line[size] = '\0';
+        }
+        else {
+            int valid = 0;
+            for (int i = 0; i < strlen(validch); i++) {
+                valid |= c == validch[i];
+            }
+            
+            if (valid) {
+                line[size] = c;
+                size++;
+
+                line[size] = '\0';
+            }
+            else {
+                invalidch_error();
+            }
+        }
+        print_in(x, y - size / 2, line, 1, 0);
+        print_all();
+    }
+    print_in(x, y - size / 2, line, 0, 0);
+    return line;
+}
+
+int valid_password(char *line) {
+    int len = strlen(line);
+    int capc = 0, smallc = 0, digc = 0;
+    for (int i = 0; i < len; i++) {
+        capc |= ('A' <= line[i] && line[i] <= 'Z');
+        smallc |= ('a' <= line[i] && line[i] <= 'z');
+        digc |= ('0' <= line[i] && line[i] <= '9');
+    }
+    return capc && smallc && digc;
+}
+
+char *get_password(int x, int y, char *validch, int min, int max, int hide) {
     char *line = (char *) calloc(Y, sizeof(char));
     char *sline = (char *) calloc(Y, sizeof(char));
     int size = 0, c;
     while (TRUE) {
-        print_in(x, y - size / 2, sline, 1);
-        print_all();
         c = getch();
         refresh_all();
-        if (c == '\n') {
+        if (c == 10) { // '\n'
             if (size < min) {
                 tooshort_error(min);
-                continue;
             }
             else if (max < size) {
                 toolong_error(max);
-                continue;
             }
-            else break;
+            else {
+                if (valid_password(line)) {
+                    break;
+                }
+                else {
+                    notvalidpassword_error();
+                }
+            }
         }
-        //mvprintw(30, 30, "%d", c);
-        //getch();
-        if ((c < 0 || c >= 128) && c != 263) {
+        else if ((c < 0 || c >= 128) && c != 263) {
             invalidch_error();
-            continue;
         }
-        if (c == 263) {
+        else if (c == 263) {
             size--;
             if (size < 0)
                 size = 0;
+
+            line[size] = '\0';
+            sline[size] = '\0';
         }
         else {
             int valid = 0;
@@ -143,50 +248,60 @@ char *get_line(int x, int y, char *validch, int min, int max, int hide) {
                 line[size] = c;
                 sline[size] = (hide? '*': c);
                 size++;
+
+                line[size] = '\0';
+                sline[size] = '\0';
+                print_in(x, y - size / 2, sline, 1, 0);
+                print_all();
             }
             else {
                 invalidch_error();
-                continue;
             }
         }
-        line[size] = '\0';
-        sline[size] = '\0';
-
-        refresh_all();
-
-		// attron(A_BOLD);
-		// attroff(A_BOLD);
+        print_in(x, y - size / 2, sline, 1, 0);
+        print_all();
     }
-    print_in(x, y - size / 2, sline, 0);
+    print_in(x, y - size / 2, sline, 0, 0);
     return line;
 }
 
-int main() {
-    init_screen();
-    // mvprintw(44, 180, "TEST");
-    // getch();
+void sign_up() {
+    print_in(0, Y / 2 - 11, "Rogue. Game of legends!", 0, head_delay);
+    print_in(2, Y / 2 - 4, "Sign Up", 0, 50000);
 
-
-    getch();
-    // move(1, 60);
-    print_in(0, Y / 2 - 11, "Rogue. Game of legends!", 0);
-    print_in(2, Y / 2 - 3, "Sign Up", 0);
-
-    print_in(4, Y / 2 - 11, "What should we call you?", 0);
+    print_in(4, Y / 2 - 12, "What should we call you?", 0, head_delay);
     print_all();
-    char *name = get_line(5, Y / 2, normalch, 5, 20, 0);
+    char *name = get_name(5, Y / 2, normalch, 5, 20);
 
-    print_in(6, Y / 2 - 7, "How old are you?", 0);
+    print_in(6, Y / 2 - 13, "What is your email address?", 0, head_delay);
     print_all();
-    char *age = get_line(7, Y / 2, numberch, 1, 2, 0);
+    char *email = get_email(7, Y / 2, normalch);
 
-    print_in(8, Y / 2 - 11, "Type a strong password!", 0);
+    print_in(8, Y / 2 - 11, "Type a strong password!", 0, head_delay);
     print_all();
-    char *password = get_line(9, Y / 2, normalch, 8, 30, 1);
+    char *password = get_password(9, Y / 2, normalch, 7, 30, 1);
 
     FILE *fptr = fopen("players.txt", "a");
-    fprintf(fptr, "{\n\tname: %s\n\tage: %s\n\tpassword: %s\n}\n", name, age, password);
+    fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n}\n", name, email, password);
     fclose(fptr);
-
-    end_screen();
 }
+/*
+int main() {
+    init_screen();
+
+    // FILE *players = fopen("players.txt", "r");
+    // if (players == NULL) {
+    //    fclose(players);
+        sign_up();
+    // }
+    // fclose(players);
+    
+
+
+
+    //getch();
+    end_screen();
+    // move(1, 60);
+    
+}
+// */
