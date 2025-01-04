@@ -9,9 +9,15 @@
 #define success_delay 1400000
 #define X 45
 #define Y 184
+#define KDOWN 258
+#define KUP 259
+#define KLEFT 260
+#define KRIGHT 261
 
 typedef struct {
-    char *name;
+    char *name, *first_play;
+    int gold, point;
+
 
 } User;
 
@@ -24,6 +30,7 @@ typedef struct {
 
 #ifndef SCREEN
 #define SCREEN
+
 
 void init_screen();
 void end_screen();

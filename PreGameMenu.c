@@ -11,20 +11,15 @@ int pregame_menu() {
 
     int cursor = 2;
     while (TRUE) {
-        print_in(cursor, Y / 2 - 10, "-->", 1, 0);
+        print_in(cursor * 2, Y / 2 - 10, "-->", 1, 0);
         print_all();
         int c = getch();
 
-        if (c == 258) {
-            // Down
-            if (cursor == 10) continue;
-
-            cursor += 2;
+        if (c == KDOWN) {
+            cursor += cursor != 5;
         }
-        else if (c == 259) {
-            // Up
-            if (cursor == 2) continue;
-            cursor -= 2;
+        else if (c == KUP) {
+            cursor -= cursor != 1;
         }
         else if (c == '\n') {
             break;
@@ -33,5 +28,5 @@ int pregame_menu() {
 
     }
     clear_all();
-    return cursor / 2;
+    return cursor;
 }

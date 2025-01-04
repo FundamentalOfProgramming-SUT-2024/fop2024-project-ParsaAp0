@@ -1,5 +1,6 @@
 #include "header.h"
 
+
 extern char map[X][Y];
 extern int cons[X][Y], delayed[X][Y];
 

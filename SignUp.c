@@ -240,7 +240,7 @@ void sign_up() {
     
 
     FILE *fptr = fopen("players.txt", "a");
-    fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n}\n", name, email, password);
+    fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n\tpoint: 0\n\tgold: 0\n\tfirst_play: 0.0.0,00:00:00\n}\n", name, email, password);
     fclose(fptr);
 
 

@@ -1,7 +1,3 @@
-#include <string.h>
-#include <stdlib.h>
-#include <ncurses.h>
-#include <unistd.h>
 #include "header.h"
 
 extern char normalch[100], numberch[11];
@@ -118,9 +114,11 @@ User sign_in() {
     FILE *pls = fopen("players.txt", "r");
     int sz = 0;
     char names[100][50], passes[100][50];
-    while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %s\n}\n", names[sz], passes[sz]) == 2) {
+    while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %s\n\tpoint: %*s\n\tgold: %*s\n\tfirst_play: %*s\n}\n", names[sz], passes[sz]) == 2) {
         sz++;
     }
+    if (pls != NULL) fclose(pls);
+
     print_inhdr(0, "Rogue. Game of legends!", 0);
     print_inhdr(2, "Sign In", head_delay);
     print_inhdr(4, "What's your name?", head_delay);
@@ -151,8 +149,21 @@ User sign_in() {
     
     clear_all();
 
-    User user = {name};
+    User res;
+    pls = fopen("players.txt", "r");
+    char rname[50], rpass[50], rdate[50];
+    int rgold, rpoint;
+    while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %s\n\tpoint: %d\n\tgold: %d\n\tfirst_play: %s\n}\n", rname, rpass, &rpoint, &rgold, rdate) == 5) {
+        if (strcmp(name, rname) == 0) {
+            res.name = rname;
+            res.first_play = rdate;
+            res.point = rpoint;
+            res.gold = rgold;
+            fclose(pls);
+            break;
+        }
+        sz++;
+    }
 
-    //char result[200];
-    return user;
+    return res;
 }
