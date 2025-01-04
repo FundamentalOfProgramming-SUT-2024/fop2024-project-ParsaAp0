@@ -81,3 +81,51 @@ void clear_all() {
     clear();
     refresh();
 }
+
+void clear_all_row(int i) {
+    for (int j = 0; j < Y; j++) {
+        map[i][j] = ' ';
+        delayed[i][j] = 0;
+        cons[i][j] = 0;
+    }
+    clear();
+    refresh();
+}
+
+void invalidch_error() {
+    print_in(X - 1, 0, "Invalid character", 1, error_delay);
+}
+
+void usernamenotfound_error() {
+    print_in(X - 1, 0, "Wrong username! Try again!", 1, error_delay);
+}
+
+void notcorrectpass_error() {
+    print_in(X - 1, 0, "Wrong password! Try again!", 1, error_delay);
+}
+
+void tooshort_error(int lim) {
+    char mess[50] = "Too short!! at least ";
+    sprintf(mess + strlen(mess), "%d", lim);
+    strcat(mess, " characters are needed.");
+    print_in(X - 1, 0, mess, 1, error_delay);
+}
+
+void toolong_error(int lim) {
+    char mess[50] = "Too long!! at most ";
+    sprintf(mess + strlen(mess), "%d", lim);
+    strcat(mess, " characters are needed.");
+    print_in(X - 1, 0, mess, 1, error_delay);
+}
+
+void alreadyexist_error() {
+    print_in(X - 1, 0, "This name already exist! Try again!", 1, error_delay);
+}
+
+void notvalidemail_error() {
+    print_in(X - 1, 0, "The email format is not correct. It should be like \"xx@yy.zz", 1, error_delay);
+}
+
+void notvalidpassword_error() {
+    print_in(X - 1, 0, "Password should contains at least one digit, one capital letter and one small letter", 1, error_delay);
+}

@@ -1,9 +1,11 @@
-OBJS=SignUp.c Screen.c Main.c
+OBJS=SignUp.c SignIn.c Screen.c StartMenu.c Main.c
 
 all: exec
 
 run: exec
 	./exec
+test:
+	@gcc test.c -lncurses -o test 
 
 exec: $(OBJS)
-	@gcc $(OBJS) -fsanitize=address -lncurses -o exec
+	@gcc $(OBJS) -lncurses -o exec

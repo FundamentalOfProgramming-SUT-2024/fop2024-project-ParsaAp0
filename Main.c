@@ -22,7 +22,19 @@ int main() {
     else {
         fclose(players);
     }
-    clear_all();
+
+    while (true) {
+        int result = start_menu();
+        if (result == 1) {
+            sign_in();
+        }
+        else if (result == 2) {
+            sign_up();
+        }
+        else if (result == 3) {
+            break;
+        }
+    }
 
 
 

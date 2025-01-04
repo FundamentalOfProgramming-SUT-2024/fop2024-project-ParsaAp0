@@ -20,36 +20,6 @@ char numberch[11] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0
 };
 
-void invalidch_error() {
-    print_in(X - 1, 0, "Invalid character", 1, error_delay);
-}
-
-void tooshort_error(int lim) {
-    char mess[50] = "Too short!! at least ";
-    sprintf(mess + strlen(mess), "%d", lim);
-    strcat(mess, " characters are needed.");
-    print_in(X - 1, 0, mess, 1, error_delay);
-}
-
-void toolong_error(int lim) {
-    char mess[50] = "Too long!! at most ";
-    sprintf(mess + strlen(mess), "%d", lim);
-    strcat(mess, " characters are needed.");
-    print_in(X - 1, 0, mess, 1, error_delay);
-}
-
-void alreadyexist_error() {
-    print_in(X - 1, 0, "This name already exist! Try again!", 1, error_delay);
-}
-
-void notvalidemail_error() {
-    print_in(X - 1, 0, "The email format is not correct. It should be like \"xx@yy.zz", 1, error_delay);
-}
-
-void notvalidpassword_error() {
-    print_in(X - 1, 0, "Password should contains at least one digit, one capital letter and one small letter", 1, error_delay);
-}
-
 int is_new_user(char *line) {
     FILE *players = fopen("players.txt", "r");
     if (players == NULL)
@@ -281,27 +251,15 @@ void sign_up() {
     print_all();
     char *password = get_password(9, Y / 2, normalch, 7, 30, 1);
 
+    print_in(X - 1, 0, "The sign up process is completed successfully..", 1, error_delay); // It don't print the last '.'.
+    print_all();
+    usleep(1400000);
+    
+
     FILE *fptr = fopen("players.txt", "a");
     fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n}\n", name, email, password);
     fclose(fptr);
+
+
+    clear_all();
 }
-/*
-int main() {
-    init_screen();
-
-    // FILE *players = fopen("players.txt", "r");
-    // if (players == NULL) {
-    //    fclose(players);
-        sign_up();
-    // }
-    // fclose(players);
-    
-
-
-
-    //getch();
-    end_screen();
-    // move(1, 60);
-    
-}
-// */
