@@ -1,26 +1,35 @@
-#ifndef MAIN
-#define MAIN
 #include <string.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include <unistd.h>
+#include <stdio.h>
+
+#define error_delay 10000
+#define head_delay 50000
+#define success_delay 1400000
+#define X 45
+#define Y 184
+
+typedef struct {
+    char *name;
+
+} User;
+
+#ifndef MAIN
+#define MAIN
+
+
 
 #endif
 
 #ifndef SCREEN
 #define SCREEN
 
-#include <ncurses.h>
-#define X 45
-#define Y 184
-extern char map[X][Y];
-extern int cons[X][Y], delayed[X][Y];
-extern char normalch[100], numberch[11];
-
-
 void init_screen();
 void end_screen();
 void print_all();
 void print_in(int x, int y, char *string, int con, int delay);
+void print_inhdr(int x, char *string, int delay);
 void refresh_all();
 void clear_all();
 void clear_all_row(int x);
@@ -38,15 +47,14 @@ void notvalidpassword_error();
 #ifndef SIGNUP
 #define SIGNUP
 
-#define error_delay 10000
-#define head_delay 50000
 void sign_up();
 
 #endif
 
 #ifndef SIGNIN
 #define SIGNIN
-void sign_in();
+
+User sign_in();
 
 #endif
 
@@ -54,5 +62,12 @@ void sign_in();
 #define START_MENU
 
 int start_menu();
+
+#endif
+
+#ifndef PREGAME_MENU
+#define PREGAME_MENU
+
+int pregame_menu();
 
 #endif

@@ -1,24 +1,6 @@
-#include <string.h>
-#include <stdlib.h>
-#include <ncurses.h>
-#include <unistd.h>
 #include "header.h"
 
-char normalch[100] = {
-    32, 33, 34, 35, 36, 37, 38, 39,
-    40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-    50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-    60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
-    70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
-    80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
-    90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
-    100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
-    110, 111, 112, 113, 114, 115, 116, 117, 118, 119,
-    120, 121, 122, 123, 124, 125, 126, 0
-};
-char numberch[11] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0
-};
+extern char normalch[100], numberch[11];
 
 int is_new_user(char *line) {
     FILE *players = fopen("players.txt", "r");
@@ -236,24 +218,25 @@ char *get_password(int x, int y, char *validch, int min, int max, int hide) {
 }
 
 void sign_up() {
-    print_in(0, Y / 2 - 11, "Rogue. Game of legends!", 0, head_delay);
-    print_in(2, Y / 2 - 4, "Sign Up", 0, 50000);
+    print_inhdr(0, "Rogue. Game of legends!", 0);
+    print_inhdr(2, "Sign Up", head_delay);
+    // print_in(X - 3, 0, "Back [Esc]", 0, head_delay);
 
-    print_in(4, Y / 2 - 12, "What should we call you?", 0, head_delay);
+    print_inhdr(4, "What should we call you?", head_delay);
     print_all();
     char *name = get_name(5, Y / 2, normalch, 5, 20);
 
-    print_in(6, Y / 2 - 13, "What is your email address?", 0, head_delay);
+    print_inhdr(6, "What is your email address?", head_delay);
     print_all();
     char *email = get_email(7, Y / 2, normalch);
 
-    print_in(8, Y / 2 - 11, "Type a strong password!", 0, head_delay);
+    print_inhdr(8, "Type a strong password!", head_delay);
     print_all();
     char *password = get_password(9, Y / 2, normalch, 7, 30, 1);
 
     print_in(X - 1, 0, "The sign up process is completed successfully..", 1, error_delay); // It don't print the last '.'.
     print_all();
-    usleep(1400000);
+    usleep(success_delay);
     
 
     FILE *fptr = fopen("players.txt", "a");

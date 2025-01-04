@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include "header.h"
 
-
 extern char normalch[100], numberch[11];
 
 int find_user(char *name, char names[100][50], int sz) {
@@ -115,16 +114,16 @@ char *rget_password(int x, int y, char *validch, int min, int max, int hide) {
     return line;
 }
 
-void sign_in() {
+User sign_in() {
     FILE *pls = fopen("players.txt", "r");
     int sz = 0;
     char names[100][50], passes[100][50];
     while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %s\n}\n", names[sz], passes[sz]) == 2) {
         sz++;
     }
-    print_in(0, Y / 2 - 11, "Rogue. Game of legends!", 0, head_delay);
-    print_in(2, Y / 2 - 4, "Sign In", 0, head_delay);
-    print_in(4, Y / 2 - 8, "What's your name?", 0, head_delay);
+    print_inhdr(0, "Rogue. Game of legends!", 0);
+    print_inhdr(2, "Sign In", head_delay);
+    print_inhdr(4, "What's your name?", head_delay);
     print_all();
     
     char *name = rget_name(5, Y / 2, normalch, 5, 20);
@@ -136,7 +135,7 @@ void sign_in() {
         name = rget_name(5, Y / 2, normalch, 5, 20);
     }
 
-    print_in(6, Y / 2 - 10, "What's your password?", 0, head_delay);
+    print_inhdr(6, "What's your password?", head_delay);
     print_all();
     char *password = rget_password(7, Y / 2, normalch, 7, 30, 1);
     while (correct_password(password, passes, sz) == 0) {
@@ -148,7 +147,12 @@ void sign_in() {
 
     print_in(X - 1, 0, "The sign in process is completed successfully..", 1, error_delay); // It don't print the last '.'.
     print_all();
-    usleep(1400000);
+    usleep(success_delay);
     
     clear_all();
+
+    User user = {name};
+
+    //char result[200];
+    return user;
 }

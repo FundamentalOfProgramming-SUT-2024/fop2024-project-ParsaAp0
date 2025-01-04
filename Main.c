@@ -1,37 +1,26 @@
-#include <string.h>
-#include <stdlib.h>
-#include <ncurses.h>
-#include <unistd.h>
 #include "header.h"
-#include <stdio.h>
-
-
-typedef struct {
-    char *name;
-
-} User;
 
 int main() {
-    User Parsa = {"PARSA"};
+    // User Parsa = {"PARSA"};
     init_screen();
-    
-    FILE *players = fopen("players.txt", "r");
-    if (players == NULL) {
-        sign_up();
-    }
-    else {
-        fclose(players);
-    }
 
     while (true) {
+        User user;
         int result = start_menu();
-        if (result == 1) {
-            sign_in();
-        }
-        else if (result == 2) {
-            sign_up();
+        if (result == 1 || result == 2) {
+            if (result == 1) {
+                user = sign_in();
+            }
+            else {
+                user.name = "GUEST MODE";
+            }
+
+            int res = pregame_menu();
         }
         else if (result == 3) {
+            sign_up();
+        }
+        else if (result == 4) {
             break;
         }
     }
@@ -39,5 +28,5 @@ int main() {
 
 
     end_screen();
-    return 1;
+    return 0;
 }

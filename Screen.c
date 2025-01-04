@@ -1,12 +1,7 @@
-#include <string.h>
-#include <stdlib.h>
-#include <ncurses.h>
-#include <unistd.h>
 #include "header.h"
 
-// unsigned int atts[X][Y][10];
-char map[X][Y];
-int cons[X][Y], delayed[X][Y];
+extern char map[X][Y];
+extern int cons[X][Y], delayed[X][Y];
 
 void init_screen() {
     initscr();
@@ -68,6 +63,10 @@ void print_in(int x, int y, char *string, int con, int delay) {
         cons[nx][ny] = con;
         ny++;
     }
+}
+
+void print_inhdr(int x, char *string, int delay) {
+    print_in(x, Y / 2 - strlen(string) / 2, string, 0, delay);
 }
 
 void clear_all() {
