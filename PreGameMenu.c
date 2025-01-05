@@ -9,7 +9,7 @@ int pregame_menu() {
     print_inhdr(10, "Back (Log out)", error_delay);
     print_all();
 
-    int cursor = 2;
+    int cursor = 1;
     while (TRUE) {
         print_in(cursor * 2, Y / 2 - 10, "-->", 1, 0);
         print_all();

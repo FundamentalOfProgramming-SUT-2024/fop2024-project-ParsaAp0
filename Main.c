@@ -14,12 +14,16 @@ int main() {
             }
             else {
                 user.name = "GUEST MODE";
+                user.first_play = "0.0.0,00:00:00";
+                user.gold = 0;
+                user.point = 0;
             }
 
             while (true) {
                 int res = pregame_menu();
                 if (res == 1) {
                     // New Game
+                    create_map();
                 }
                 else if (res == 2) {
                     // Resume Game
@@ -32,6 +36,8 @@ int main() {
                 }
                 else {
                     // Back
+
+                    break;
                 }
             }
         }
