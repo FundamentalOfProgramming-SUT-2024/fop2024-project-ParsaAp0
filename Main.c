@@ -1,60 +1,60 @@
 #include "header.h"
 
 int main() {
-    init_screen();
+	init_screen();
 
-    int first_time = true;
-    while (true) {
-        User user;
-        int result = start_menu(first_time * head_delay);
-        first_time = false;
-        if (result == 1 || result == 2) {
-            if (result == 1) {
-                user = sign_in();
-                if (user.name[0] == 0) {
-                    continue;
-                }
-            }
-            else {
-                user.name = "GUEST MODE";
-                user.first_play = "0.0.0,00:00:00";
-                user.gold = 0;
-                user.point = 0;
-            }
+	int first_time = true;
+	while (true) {
+		User user;
+		int result = start_menu(first_time * head_delay);
+		first_time = false;
+		if (result == 1 || result == 2) {
+			if (result == 1) {
+				user = sign_in();
+				if (user.name[0] == 0) {
+					continue;
+				}
+			}
+			else {
+				user.name = "GUEST MODE";
+				user.first_play = "0.0.0,00:00:00";
+				user.gold = 0;
+				user.point = 0;
+			}
 
-            while (true) {
-                int res = pregame_menu();
-                if (res == 1) {
-                    // New Game
-                    char* map_name = make_map();
-                    // run_game(user, map_name);
-                }
-                else if (res == 2) {
-                    // Resume Game
-                }
-                else if (res == 3) {
-                    // Settings
-                }
-                else if (res == 4) {
-                    // Scoreboard
-                }
-                else {
-                    // Back
+			while (true) {
+				int res = pregame_menu();
+				if (res == 1) {
+					// New Game
+					char* map_name = make_map();
+					// run_game(user, map_name);
+				}
+				else if (res == 2) {
+					// Resume Game
+				}
+				else if (res == 3) {
+					// Settings
+				}
+				else if (res == 4) {
+					// Scoreboard
+				}
+				else {
+					// Back
 
-                    break;
-                }
-            }
-        }
-        else if (result == 3) {
-            sign_up();
-        }
-        else if (result == 4) {
-            break;
-        }
-    }
+					break;
+				}
+			}
+		}
+		else if (result == 3) {
+			sign_up();
+		}
+		else if (result == 4) {
+			break;
+		}
+	}
 
 
 
-    end_screen();
-    return 0;
+	end_screen();
+	return 0;
 }

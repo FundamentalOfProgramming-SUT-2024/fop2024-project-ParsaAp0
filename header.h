@@ -15,8 +15,8 @@
 #define KRIGHT 261
 
 typedef struct {
-    char *name, *first_play;
-    int gold, point;
+	char *name, *first_play;
+	int gold, point;
 
 
 } User;
@@ -86,17 +86,17 @@ int pregame_menu();
 #define PATH_NUMBER 12
 
 typedef struct {
-    int x, y;
+	int x, y;
 } Coor;
 
 typedef struct {
-    Coor *coor;
+	Coor *coor;
 //	int *coor;
 } Room;
 
 typedef struct {
 	int r1, r2, size;
-    Coor *coor;
+	Coor *coor;
 } Path;
 
 char* make_map();

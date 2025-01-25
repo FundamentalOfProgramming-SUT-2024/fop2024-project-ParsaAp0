@@ -257,7 +257,7 @@ void set_start_point() {
 }
 
 char* make_map() {
-    srand(time(0));
+	srand(time(0));
 	create_map();
 	while (check_map() == 0) {
 		for (int i = 0; i < psize; i++) {
@@ -303,40 +303,13 @@ char* make_map() {
 		return result;
 	}
 }
-
 /*
-void print_room(Room *v) {
-	for (int xi = v->coor[0] + 1; xi < v->coor[1]; xi++) {
-		for (int yi = v->coor[2] + 1; yi < v->coor[3]; yi++) {
-			map[xi][yi] = '.';
-		}
-	}
-	for (int yi = v->coor[2]; yi <= v->coor[3]; yi++) {
-		map[v->coor[0]][yi] = '_';
-		if (yi != v->coor[2] && yi != v->coor[3]) {
-			map[v->coor[1]][yi] = '_';
-		}
-	}
-	for (int xi = v->coor[0] + 1; xi <= v->coor[1]; xi++) {
-		map[xi][v->coor[2]] = '|';
-		map[xi][v->coor[3]] = '|';
-	}
-}
-
-void print_path(Path *v) {
-	for (int i = 1; i < -1 + (*v).size; i++) {
-		map[(*v).coor[i][0]][(*v).coor[i][1]] = '#';
-	}
-	map[(*v).coor[0][0]][(*v).coor[0][1]] = '+';
-	map[(*v).coor[(*v).size - 1][0]][(*v).coor[(*v).size - 1][1]] = '+';
-}
-
 void print_in_map() {
-    for (int i = 2; i < RX; i++) {
-        for (int j = 0; j < RY; j++) {
-            map[i][j] = ' ';
-        }
-    }
+	for (int i = 2; i < RX; i++) {
+	\tfor (int j = 0; j < RY; j++) {
+			map[i][j] = ' ';
+		}
+	}
 	for (int j = 0; j < RY; j++) {
 		map[2][j] = '_';
 		if (j != 0 || j != RY - 1) {
@@ -356,7 +329,7 @@ void print_in_map() {
 }
 
 int main() {
-    srand(time(0));
+	srand(time(0));
 	create_map();
 	while (check_map() == 0) {
 		for (int i = 0; i < psize; i++) {
