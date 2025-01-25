@@ -11,6 +11,9 @@ int main() {
         if (result == 1 || result == 2) {
             if (result == 1) {
                 user = sign_in();
+                if (user.name[0] == 0) {
+                    continue;
+                }
             }
             else {
                 user.name = "GUEST MODE";
@@ -23,7 +26,8 @@ int main() {
                 int res = pregame_menu();
                 if (res == 1) {
                     // New Game
-                    create_map();
+                    char* map_name = make_map();
+                    // run_game(user, map_name);
                 }
                 else if (res == 2) {
                     // Resume Game

@@ -14,7 +14,11 @@ int start_menu(int delay) {
         print_all();
         int c = getch();
 
-        if (c == KDOWN) {
+        if (c == 27) { // Esc
+            cursor = 4;
+            break;
+        }
+        else if (c == KDOWN) {
             cursor = (cursor % 4 + 1);
         }
         else if (c == KUP) {

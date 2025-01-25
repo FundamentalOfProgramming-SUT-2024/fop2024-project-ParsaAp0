@@ -15,7 +15,11 @@ int pregame_menu() {
         print_all();
         int c = getch();
 
-        if (c == KDOWN) {
+        if (c == 27) { // Esc
+            cursor = 5;
+            break;
+        }
+        else if (c == KDOWN) {
             cursor = (cursor % 5 + 1);
         }
         else if (c == KUP) {

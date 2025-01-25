@@ -1,4 +1,4 @@
-OBJS=MCVar.c Screen.c StartMenu.c SignUp.c SignIn.c PreGameMenu.c Main.c
+OBJS=MCVar.c MenuScreen.c StartMenu.c SignUp.c SignIn.c PreGameMenu.c CreateMap.c InGame.c Main.c
 
 all: exec
 

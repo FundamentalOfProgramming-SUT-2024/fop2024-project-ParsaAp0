@@ -28,8 +28,8 @@ typedef struct {
 
 #endif
 
-#ifndef SCREEN
-#define SCREEN
+#ifndef MenuSCREEN
+#define MenuSCREEN
 
 
 void init_screen();
@@ -76,5 +76,36 @@ int start_menu();
 #define PREGAME_MENU
 
 int pregame_menu();
+
+#endif
+
+#ifndef CREATEMAP
+#define CREATEMAP
+
+#define ROOM_NUMBER 9
+#define PATH_NUMBER 12
+
+typedef struct {
+    int x, y;
+} Coor;
+
+typedef struct {
+    Coor *coor;
+//	int *coor;
+} Room;
+
+typedef struct {
+	int r1, r2, size;
+    Coor *coor;
+} Path;
+
+char* make_map();
+
+#endif
+
+#ifndef INGAME
+#define INGAME
+
+void run_game(User user, char* map_name);
 
 #endif
