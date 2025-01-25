@@ -6,7 +6,7 @@ int pregame_menu() {
     print_inhdr(4, "Resume Game", error_delay);
     print_inhdr(6, "Settings", error_delay);
     print_inhdr(8, "Scoreboard", error_delay);
-    print_inhdr(10, "Back (Log out)", error_delay);
+    print_inhdr(10, "Log out", error_delay);
     print_all();
 
     int cursor = 1;
@@ -16,10 +16,10 @@ int pregame_menu() {
         int c = getch();
 
         if (c == KDOWN) {
-            cursor += cursor != 5;
+            cursor = (cursor % 5 + 1);
         }
         else if (c == KUP) {
-            cursor -= cursor != 1;
+            cursor = (cursor + 3) % 5 + 1;
         }
         else if (c == '\n') {
             break;

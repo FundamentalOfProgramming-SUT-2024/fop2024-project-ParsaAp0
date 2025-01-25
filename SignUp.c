@@ -23,7 +23,11 @@ char *get_name(int x, int y, char *validch, int min, int max) {
     while (TRUE) {
         c = getch();
         refresh_all();
-        if (c == 10) { // '\n'
+        if (c == 27) { // Esc
+            line[0] = 0;
+            return line;
+        }
+        else if (c == 10) { // '\n'
             if (size < min) {
                 tooshort_error(min);
             }
@@ -104,7 +108,11 @@ char *get_email(int x, int y, char *validch) {
     while (TRUE) {
         c = getch();
         refresh_all();
-        if (c == 10) { // '\n'
+        if (c == 27) { // Esc
+            line[0] = 0;
+            return line;
+        }
+        else if (c == 10) { // '\n'
             if (is_correct_email(line)) {
                 break;
             }
@@ -163,7 +171,11 @@ char *get_password(int x, int y, char *validch, int min, int max, int hide) {
     while (TRUE) {
         c = getch();
         refresh_all();
-        if (c == 10) { // '\n'
+        if (c == 27) { // Esc
+            line[0] = 0;
+            return line;
+        }
+        else if (c == 10) { // '\n'
             if (size < min) {
                 tooshort_error(min);
             }
@@ -225,14 +237,26 @@ void sign_up() {
     print_inhdr(4, "What should we call you?", head_delay);
     print_all();
     char *name = get_name(5, Y / 2, normalch, 5, 20);
+    if (strlen(name) == 0) {
+        clear_all();
+        return;
+    }
 
     print_inhdr(6, "What is your email address?", head_delay);
     print_all();
     char *email = get_email(7, Y / 2, normalch);
+    if (strlen(email) == 0) {
+        clear_all();
+        return;
+    }
 
     print_inhdr(8, "Type a strong password!", head_delay);
     print_all();
     char *password = get_password(9, Y / 2, normalch, 7, 30, 1);
+    if (strlen(password) == 0) {
+        clear_all();
+        return;
+    }
 
     print_in(X - 1, 0, "The sign up process is completed successfully..", 1, error_delay); // It don't print the last '.'.
     print_all();

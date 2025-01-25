@@ -26,7 +26,11 @@ char *rget_name(int x, int y, char *validch, int min, int max) {
     while (TRUE) {
         c = getch();
         refresh_all();
-        if (c == 10) { // '\n'
+        if (c == 27) { // Esc
+            line[0] = 0;
+            return line;
+        }
+        else if (c == 10) { // '\n'
             break;
         }
         else if ((c < 0 || c >= 128) && c != 263) {
@@ -69,7 +73,15 @@ char *rget_password(int x, int y, char *validch, int min, int max, int hide) {
     while (TRUE) {
         c = getch();
         refresh_all();
-        if (c == 10) { // '\n'
+        if (c == 27) { // Esc
+            line[0] = 0;
+            return line;
+        }
+        else if (c == 27) {
+            line[0] = 0;
+            return line;
+        }
+        else if (c == 10) { // '\n'
             break;
         }
         else if ((c < 0 || c >= 128) && c != 263) {
@@ -125,6 +137,13 @@ User sign_in() {
     print_all();
     
     char *name = rget_name(5, Y / 2, normalch, 5, 20);
+    if (strlen(name) == 0) {
+        clear_all();
+        User user;
+        user.name = name;
+        user.name[0] = 0;
+        return user;
+    }
     while (find_user(name, names, sz) == 0) {
         usernamenotfound_error();
         clear_all_row(5);
@@ -136,6 +155,13 @@ User sign_in() {
     print_inhdr(6, "What's your password?", head_delay);
     print_all();
     char *password = rget_password(7, Y / 2, normalch, 7, 30, 1);
+    if (strlen(password) == 0) {
+        clear_all();
+        User user;
+        user.name = name;
+        user.name[0] = 0;
+        return user;
+    }
     while (correct_password(password, passes, sz) == 0) {
         notcorrectpass_error();
         clear_all_row(7);

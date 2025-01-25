@@ -15,10 +15,10 @@ int start_menu(int delay) {
         int c = getch();
 
         if (c == KDOWN) {
-            cursor += cursor != 4;
+            cursor = (cursor % 4 + 1);
         }
         else if (c == KUP) {
-            cursor -= cursor != 1;
+            cursor = (cursor + 2) % 4 + 1;
         }
         else if (c == '\n') {
             break;
