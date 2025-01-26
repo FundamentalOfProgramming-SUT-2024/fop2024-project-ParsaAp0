@@ -102,7 +102,6 @@ typedef struct {
 	Coor *coor;
 } Path;
 
-void save_map(char* name, Room* rooms, Path* paths, Coor start_coor, int psize);
 char* make_map();
 char* find_last_map();
 

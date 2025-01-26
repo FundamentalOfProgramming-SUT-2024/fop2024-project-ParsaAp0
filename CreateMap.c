@@ -73,7 +73,7 @@ void create_vertical_path(int id1, int id2, int tx, int tly, int Try, int dx, in
 		}
 	}
 	else {
-		int mid = (tx + dx) / 2, ptr = tx;
+		int mid = tx + 1 + rand() % (dx - tx - 1), ptr = tx;
 		while (ptr <= mid) {
 			Coor *co = (Coor *) malloc(sizeof(Coor));
 			// int *co = (int *) malloc(2 * sizeof(int));
@@ -83,21 +83,27 @@ void create_vertical_path(int id1, int id2, int tx, int tly, int Try, int dx, in
 			ptr++;
 		}
 
-		for (int p = up + 1; p < down; p++) {
-			Coor *co = (Coor *) malloc(sizeof(Coor));
-			// int *co = (int *) malloc(2 * sizeof(int));
-			co[0].x = mid;
-			co[0].y = p;
-			add_path_char(paths + psize, co[0]);
-		}
+		if (up < down) {
+			for (int p = up + 1; p < down; p++) {
+				Coor *co = (Coor *) malloc(sizeof(Coor));
+				// int *co = (int *) malloc(2 * sizeof(int));
+				co[0].x = mid;
+				co[0].y = p;
+				add_path_char(paths + psize, co[0]);
+			}
 
-		for (int p = down + 1; p < up; p++) {
-			Coor *co = (Coor *) malloc(sizeof(Coor));
-			// int *co = (int *) malloc(2 * sizeof(int));
-			co[0].x = mid;
-			co[0].y = p;
-			add_path_char(paths + psize, co[0]);
 		}
+		else {
+			for (int p = up - 1; p > down; p--) {
+			// for (int p = down + 1; p < up; p++) {
+				Coor *co = (Coor *) malloc(sizeof(Coor));
+				// int *co = (int *) malloc(2 * sizeof(int));
+				co[0].x = mid;
+				co[0].y = p;
+				add_path_char(paths + psize, co[0]);
+			}
+		}
+		
 		ptr--;
 		while (ptr <= dx) {
 			Coor *co = (Coor *) malloc(sizeof(Coor));
@@ -128,7 +134,7 @@ void create_horizontal_path(int id1, int id2, int ly, int ltx, int ldx, int ry, 
 		}
 	}
 	else {
-		int mid = (ly + ry) / 2, ptr = ly;
+		int mid = ly + 1 + rand() % (ry - ly - 1), ptr = ly;
 		while (ptr <= mid) {
 			Coor *co = (Coor *) malloc(sizeof(Coor));
 			// int *co = (int *) malloc(2 * sizeof(int));
@@ -138,20 +144,25 @@ void create_horizontal_path(int id1, int id2, int ly, int ltx, int ldx, int ry, 
 			ptr++;
 		}
 
-		for (int p = left + 1; p < right; p++) {
-			Coor *co = (Coor *) malloc(sizeof(Coor));
-			// int *co = (int *) malloc(2 * sizeof(int));
-			co[0].x = p;
-			co[0].y = mid;
-			add_path_char(paths + psize, co[0]);
+		if (left < right) {
+			for (int p = left + 1; p < right; p++) {
+				Coor *co = (Coor *) malloc(sizeof(Coor));
+				// int *co = (int *) malloc(2 * sizeof(int));
+				co[0].x = p;
+				co[0].y = mid;
+				add_path_char(paths + psize, co[0]);
+			}
 		}
 
-		for (int p = right + 1; p < left; p++) {
-			Coor *co = (Coor *) malloc(sizeof(Coor));
-			// int *co = (int *) malloc(2 * sizeof(int));
-			co[0].x = p;
-			co[0].y = mid;
-			add_path_char(paths + psize, co[0]);
+		else {
+			for (int p = left - 1; p > right; p--) {
+			// for (int p = right + 1; p < left; p++) {
+				Coor *co = (Coor *) malloc(sizeof(Coor));
+				// int *co = (int *) malloc(2 * sizeof(int));
+				co[0].x = p;
+				co[0].y = mid;
+				add_path_char(paths + psize, co[0]);
+			}
 		}
 		ptr--;
 		while (ptr <= ry) {
@@ -268,7 +279,7 @@ static void reset_all() {
 	psize = 0;
 }
 
-void save_map(char* name, Room* rooms, Path* paths, Coor start_coor, int psize) {
+static void save_map(char* name, Room* rooms, Path* paths, Coor start_coor, int psize) {
 	FILE *fmap = fopen(name, "w");
 	fprintf(fmap, "Rooms:\n");
 	for (int j = 0; j < ROOM_NUMBER; j++) {
@@ -283,6 +294,14 @@ void save_map(char* name, Room* rooms, Path* paths, Coor start_coor, int psize) 
 		fprintf(fmap, "\n");
 	}
 	fprintf(fmap, "start coor: %d %d\n", start_coor.x, start_coor.y);
+	fprintf(fmap, "Visibility:\n");
+	for (int i = 3; i < RX - 1; i++) {
+		for (int j = 1; j < RY - 1; j++) {
+			fprintf(fmap, "1");
+		}
+		fprintf(fmap, "\n");
+	}
+	
 	fclose(fmap);
 }
 
