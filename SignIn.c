@@ -19,15 +19,15 @@ int correct_password(char *pass, char passes[100][50], int sz) {
 	}
 	return 0;
 }
-
 char *rget_name(int x, int y, char *validch, int min, int max) {
 	char *line = (char *) calloc(Y, sizeof(char));
 	int size = 0, c;
 	while (TRUE) {
 		c = getch();
 		refresh_all();
+
 		if (c == 27) { // Esc
-			line[0] = 0;
+			line[0] = 1;
 			return line;
 		}
 		else if (c == 10) { // '\n'
@@ -74,7 +74,7 @@ char *rget_password(int x, int y, char *validch, int min, int max, int hide) {
 		c = getch();
 		refresh_all();
 		if (c == 27) { // Esc
-			line[0] = 0;
+			line[0] = 1;
 			return line;
 		}
 		else if (c == 27) {
@@ -137,7 +137,7 @@ User sign_in() {
 	print_all();
 	
 	char *name = rget_name(5, Y / 2, normalch, 5, 20);
-	if (strlen(name) == 0) {
+	if (name[0] == 1) {
 		clear_all();
 		User user;
 		user.name = name;
@@ -150,12 +150,19 @@ User sign_in() {
 		print_all();
 
 		name = rget_name(5, Y / 2, normalch, 5, 20);
+		if (name[0] == 1) {
+			clear_all();
+			User user;
+			user.name = name;
+			user.name[0] = 0;
+			return user;
+		}
 	}
 
 	print_inhdr(6, "What's your password?", head_delay);
 	print_all();
 	char *password = rget_password(7, Y / 2, normalch, 7, 30, 1);
-	if (strlen(password) == 0) {
+	if (name[0] == 1) {
 		clear_all();
 		User user;
 		user.name = name;
@@ -167,6 +174,13 @@ User sign_in() {
 		clear_all_row(7);
 		print_all();
 		password = rget_password(7, Y / 2, normalch, 7, 30, 1);
+		if (name[0] == 1) {
+			clear_all();
+			User user;
+			user.name = name;
+			user.name[0] = 0;
+			return user;
+		}
 	}
 
 	print_in(X - 1, 0, "The sign in process is completed successfully..", 1, error_delay); // It don't print the last '.'.
