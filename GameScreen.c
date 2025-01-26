@@ -1,47 +1,50 @@
 #include "header.h"
 
+extern char lmap[5][X][Y];
+extern int lcons[5][X][Y], ldelayed[5][X][Y], att[5][X][Y][10], satt[5][X][Y];
 
-extern char map[X][Y];
-extern int cons[X][Y], delayed[X][Y];
-
-void init_screen() {
+void ginit_screen() {
 	initscr();
 	noecho();
 	keypad(stdscr, TRUE);
 	cbreak();
-	for (int i = 0; i < X; i++) {
-		for (int j = 0; j < Y; j++) {
-			map[i][j] = ' ';
-			cons[i][j] = 1;
-		}
-	}
+	// for (int i = 0; i < X; i++) {
+	// 	for (int j = 0; j < Y; j++) {
+	// 		map[i][j] = ' ';
+	// 		cons[i][j] = 1;
+	// 	}
+	// }
 }
 
-void end_screen() {
+void gend_screen() {
 	echo();
 	clear();
 	endwin();
 }
 
-void print_all() {
+void gprint_all() {
+	
 	for (int i = 0; i < X; i++) {
-		if (~i & 1) {
-			attron(A_BOLD);
-		}
 		for (int j = 0; j < Y; j++) {
+			int c = ' ';
+			for (int k = 0; k < 5; k++) {
+				if (lmap[k][i][j]) {
+					c = lmap[k][i][j];
+				}
+			}
+			mvaddch(i, j, c);
+			/*
 			if (map[i][j] != ' ' && delayed[i][j]) {
 				usleep(delayed[i][j]);
 				refresh();
 				delayed[i][j] = 0;
 			}
 			mvaddch(i, j, map[i][j]);
-		}
-		if (~i & 1) {
-			attroff(A_BOLD);
+			*/
 		}
 	}
 }
-
+/*
 void refresh_all() {
 	for (int i = 0; i < X; i++) {
 		for (int j = 0; j < Y; j++) {
@@ -129,3 +132,4 @@ void notvalidemail_error() {
 void notvalidpassword_error() {
 	print_in(X - 1, 0, "Password should contains at least one digit, one capital letter and one small letter", 1, error_delay);
 }
+*/

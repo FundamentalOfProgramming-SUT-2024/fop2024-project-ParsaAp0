@@ -19,3 +19,8 @@ char numberch[11] = {
 // unsigned int atts[X][Y][10];
 char map[X][Y];
 int cons[X][Y], delayed[X][Y];
+
+
+char lmap[5][X][Y];
+int lcons[5][X][Y], ldelayed[5][X][Y], att[5][X][Y][10], satt[5][X][Y];
+

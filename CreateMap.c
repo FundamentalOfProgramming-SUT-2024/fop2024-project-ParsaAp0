@@ -2,8 +2,6 @@
 #include <unistd.h>
 #include <time.h>
 #define printf(...) printf(__VA_ARGS__); fflush(stdout)
-#define RX 43
-#define RY 150
 
 // extern char[RX][RY];
 static Room rooms[ROOM_NUMBER];
@@ -53,7 +51,9 @@ void add_path_char(Path *v, Coor c) {
 	else
 		(*v).coor = (Coor *) realloc((*v).coor, ((*v).size + 1) * sizeof(Coor));
 		//(*v).coor = (int **) realloc((*v).coor, ((*v).size + 1) * sizeof(int *));
-	(*v).coor[(*v).size] = c;
+	(*v).coor[(*v).size].x = c.x;
+	(*v).coor[(*v).size].y = c.y;
+
 	(*v).size++;
 }
 
@@ -102,7 +102,7 @@ void create_vertical_path(int id1, int id2, int tx, int tly, int Try, int dx, in
 			Coor *co = (Coor *) malloc(sizeof(Coor));
 			// int *co = (int *) malloc(2 * sizeof(int));
 			co[0].x = ptr;
-			co[0].x = down;
+			co[0].y = down;
 			add_path_char(paths + psize, co[0]);
 			ptr++;
 		}
@@ -256,8 +256,34 @@ void set_start_point() {
 	start_coor.y = rooms[room].coor[0].y + 1 + rand() % (rooms[room].coor[1].y - rooms[room].coor[0].y - 2);
 }
 
+static void reset_all() {
+	for (int i = 0; i < ROOM_NUMBER; i++) {
+		free(rooms[i].coor);
+	}
+	for (int i = 0; i < psize; i++) {
+		free(paths[i].coor);
+		paths[i].r1 = paths[i].r2 = paths[i].size = 0;
+	}
+	psize = 0;
+}
+
 char* make_map() {
-	srand(time(0));
+	reset_all();
+	char name[15] = "map";
+	int id = 1;
+	while (id) {
+		strcpy(name, "map");
+		sprintf(name + 3, "%d", id);
+		strcat(name, ".txt");
+
+		if (access(name, F_OK) == 0) {
+			id++;
+			continue;
+		}
+		break;
+	}
+
+	srand(time(0) % 12491419 * id);
 	create_map();
 	while (check_map() == 0) {
 		for (int i = 0; i < psize; i++) {
@@ -273,40 +299,29 @@ char* make_map() {
 	}
 	set_start_point();
 
-	for (int i = 1; i; i++) {
-		char name[15] = "map";
-		sprintf(name + 3, "%d", i);
-		strcat(name, ".txt");
-
-		if (access(name, F_OK) == 0) {
-			continue;
-		}
-
-		FILE *fmap = fopen(name, "w");
-		fprintf(fmap, "Rooms:\n");
-		for (int j = 0; j < ROOM_NUMBER; j++) {
-			fprintf(fmap, "\t%d %d %d %d\n", rooms[j].coor[0].x, rooms[j].coor[0].y, rooms[j].coor[1].x, rooms[j].coor[1].y);
-		}
-		fprintf(fmap, "Paths number: %d\nPaths:\n", psize);
-		for (int j = 0; j < psize; j++) {
-			fprintf(fmap, "\tr1: %d, r2: %d, length: %d, coors: ", paths[j].r1, paths[j].r2, paths[j].size);
-			for (int k = 0; k < paths[j].size; k++) {
-				fprintf(fmap, "%d %d, ", paths[j].coor[k].x, paths[j].coor[k].y);
-			}
-			fprintf(fmap, "\n");
-		}
-		fprintf(fmap, "start coor: %d %d\n", start_coor.x, start_coor.y);
-		fclose(fmap);
-
-		char *result = calloc(15, sizeof(char));
-		strcpy(result, name);
-		return result;
+	FILE *fmap = fopen(name, "w");
+	fprintf(fmap, "Rooms:\n");
+	for (int j = 0; j < ROOM_NUMBER; j++) {
+		fprintf(fmap, "\t%d %d %d %d\n", rooms[j].coor[0].x, rooms[j].coor[0].y, rooms[j].coor[1].x, rooms[j].coor[1].y);
 	}
+	fprintf(fmap, "Paths number: %d\nPaths:\n", psize);
+	for (int j = 0; j < psize; j++) {
+		fprintf(fmap, "\tr1: %d, r2: %d, length: %d, coors: ", paths[j].r1, paths[j].r2, paths[j].size);
+		for (int k = 0; k < paths[j].size; k++) {
+			fprintf(fmap, "%d %d ", paths[j].coor[k].x, paths[j].coor[k].y);
+		}
+		fprintf(fmap, "\n");
+	}
+	fprintf(fmap, "start coor: %d %d\n", start_coor.x, start_coor.y);
+	fclose(fmap);
+	char *result = calloc(15, sizeof(char));
+	strcpy(result, name);
+	return result;
 }
 /*
 void print_in_map() {
 	for (int i = 2; i < RX; i++) {
-	\tfor (int j = 0; j < RY; j++) {
+	for (int j = 0; j < RY; j++) {
 			map[i][j] = ' ';
 		}
 	}

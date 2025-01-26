@@ -28,8 +28,8 @@ typedef struct {
 
 #endif
 
-#ifndef MenuSCREEN
-#define MenuSCREEN
+#ifndef MENUSCREEN
+#define MENUSCREEN
 
 
 void init_screen();
@@ -82,6 +82,8 @@ int pregame_menu();
 #ifndef CREATEMAP
 #define CREATEMAP
 
+#define RX 43
+#define RY 150
 #define ROOM_NUMBER 9
 #define PATH_NUMBER 12
 
@@ -108,4 +110,28 @@ char* make_map();
 
 void run_game(User user, char* map_name);
 
+#endif
+
+#ifndef GAMESCREEN
+#define GAMESCREEN
+
+
+void ginit_screen();
+void gend_screen();
+void gprint_all();
+/*
+void print_in(int x, int y, char *string, int con, int delay);
+void print_inhdr(int x, char *string, int delay);
+void refresh_all();
+void clear_all();
+void clear_all_row(int x);
+void invalidch_error();
+void usernamenotfound_error();
+void notcorrectpass_error();
+void tooshort_error(int lim);
+void toolong_error(int lim);
+void alreadyexist_error();
+void notvalidemail_error();
+void notvalidpassword_error();
+*/
 #endif

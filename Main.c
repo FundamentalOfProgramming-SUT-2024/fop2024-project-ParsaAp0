@@ -27,7 +27,9 @@ int main() {
 				if (res == 1) {
 					// New Game
 					char* map_name = make_map();
-					// run_game(user, map_name);
+					end_screen();
+					run_game(user, map_name);
+					init_screen();
 				}
 				else if (res == 2) {
 					// Resume Game
