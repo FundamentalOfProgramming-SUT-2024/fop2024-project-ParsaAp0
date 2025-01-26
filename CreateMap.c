@@ -1,6 +1,7 @@
 #include "header.h"
 #include <unistd.h>
 #include <time.h>
+#include <stdio.h>
 #define printf(...) printf(__VA_ARGS__); fflush(stdout)
 
 // extern char[RX][RY];
@@ -267,11 +268,29 @@ static void reset_all() {
 	psize = 0;
 }
 
+void save_map(char* name, Room* rooms, Path* paths, Coor start_coor, int psize) {
+	FILE *fmap = fopen(name, "w");
+	fprintf(fmap, "Rooms:\n");
+	for (int j = 0; j < ROOM_NUMBER; j++) {
+		fprintf(fmap, "\t%d %d %d %d\n", rooms[j].coor[0].x, rooms[j].coor[0].y, rooms[j].coor[1].x, rooms[j].coor[1].y);
+	}
+	fprintf(fmap, "Paths number: %d\nPaths:\n", psize);
+	for (int j = 0; j < psize; j++) {
+		fprintf(fmap, "\tr1: %d, r2: %d, length: %d, coors: ", paths[j].r1, paths[j].r2, paths[j].size);
+		for (int k = 0; k < paths[j].size; k++) {
+			fprintf(fmap, "%d %d ", paths[j].coor[k].x, paths[j].coor[k].y);
+		}
+		fprintf(fmap, "\n");
+	}
+	fprintf(fmap, "start coor: %d %d\n", start_coor.x, start_coor.y);
+	fclose(fmap);
+}
+
 char* make_map() {
 	reset_all();
 	char name[15] = "map";
 	int id = 1;
-	while (id) {
+	while (true) {
 		strcpy(name, "map");
 		sprintf(name + 3, "%d", id);
 		strcat(name, ".txt");
@@ -299,21 +318,39 @@ char* make_map() {
 	}
 	set_start_point();
 
-	FILE *fmap = fopen(name, "w");
-	fprintf(fmap, "Rooms:\n");
-	for (int j = 0; j < ROOM_NUMBER; j++) {
-		fprintf(fmap, "\t%d %d %d %d\n", rooms[j].coor[0].x, rooms[j].coor[0].y, rooms[j].coor[1].x, rooms[j].coor[1].y);
-	}
-	fprintf(fmap, "Paths number: %d\nPaths:\n", psize);
-	for (int j = 0; j < psize; j++) {
-		fprintf(fmap, "\tr1: %d, r2: %d, length: %d, coors: ", paths[j].r1, paths[j].r2, paths[j].size);
-		for (int k = 0; k < paths[j].size; k++) {
-			fprintf(fmap, "%d %d ", paths[j].coor[k].x, paths[j].coor[k].y);
+	save_map(name, rooms, paths, start_coor, psize);
+	
+	
+	char *result = calloc(15, sizeof(char));
+	strcpy(result, name);
+	return result;
+}
+
+
+char* find_last_map() {
+	char name[15] = "map";
+	int id = 0;
+
+	while (true) {
+		strcpy(name, "map");
+		sprintf(name + 3, "%d", id + 1);
+		strcat(name, ".txt");
+
+		if (access(name, F_OK) == 0) {
+			id++;
+			continue;
 		}
-		fprintf(fmap, "\n");
+		break;
 	}
-	fprintf(fmap, "start coor: %d %d\n", start_coor.x, start_coor.y);
-	fclose(fmap);
+	if (id == 0) {
+		name[0] = 0;
+	}
+	else {
+		strcpy(name, "map");
+		sprintf(name + 3, "%d", id);
+		strcat(name, ".txt");
+	}
+
 	char *result = calloc(15, sizeof(char));
 	strcpy(result, name);
 	return result;

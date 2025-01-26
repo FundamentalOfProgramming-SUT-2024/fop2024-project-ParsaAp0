@@ -127,5 +127,8 @@ void notvalidemail_error() {
 }
 
 void notvalidpassword_error() {
-	print_in(X - 1, 0, "Password should contains at least one digit, one capital letter and one small letter", 1, error_delay);
+	print_in(X - 1, 0, "Password should contains at least one digit, one capital letter and one small letter.", 1, error_delay);
+}
+void nosavedgame_error() {
+	print_in(X - 1, 0, "There is no saved game before.", 1, error_delay);
 }

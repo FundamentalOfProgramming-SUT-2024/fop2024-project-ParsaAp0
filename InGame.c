@@ -4,9 +4,11 @@
 #define printf(...) printf(__VA_ARGS__), fflush(stdout)
 
 typedef struct {
-	int coor[2];
+	Coor coor;
 	int health;
 } Player;
+
+Player player;
 
 Room grooms[ROOM_NUMBER];
 Path gpaths[PATH_NUMBER];
@@ -52,9 +54,7 @@ void init_map(FILE *fmap) {
 	fscanf(fmap, "%*s %*s %d\nPaths:", &psize);
 	
 	for (int j = 0; j < psize; j++) {
-		printf("before size: %d\n", gpaths[j].size);
 		fscanf(fmap, "%*s %d%*s %*s %d%*s %*s %d%*s %*s", &gpaths[j].r1, &gpaths[j].r2, &gpaths[j].size);
-		printf("after size: %d\n", gpaths[j].size);
 		gpaths[j].coor = (Coor *) calloc(gpaths[j].size, sizeof(Coor));
 		for (int k = 0; k < gpaths[j].size; k++) {
 			fscanf(fmap, "%d %d", &gpaths[j].coor[k].x, &gpaths[j].coor[k].y);
@@ -110,11 +110,69 @@ void init_map(FILE *fmap) {
 }
 
 void init_player(Player *p, FILE *fmap) {
-	fscanf(fmap, "start coor: %d %d", &start_coor.x, &start_coor.y);
+	fscanf(fmap, "%*s %*s %d %d", &player.coor.x, &player.coor.y);
 	p->health = 100;
-	lmap[1][start_coor.x][start_coor.y] = 
+	lmap[1][player.coor.x][player.coor.y] = 'P';
 }
 
+void mup() {
+	Coor nxt = {player.coor.x - 1, player.coor.y};
+	if (nxt.x < 0 || nxt.x >= X || nxt.y < 0 || nxt.y >= Y) {
+		return;
+	}
+	char c = lmap[0][nxt.x][nxt.y];
+	if (c == ' ' || c == '_' || c == '|') {
+		return;
+	}
+	lmap[1][player.coor.x][player.coor.y] = 0;
+	player.coor = nxt;
+	lmap[1][player.coor.x][player.coor.y] = 'P';
+}
+
+void mdown() {
+	Coor nxt = {player.coor.x + 1, player.coor.y};
+	if (nxt.x < 0 || nxt.x >= X || nxt.y < 0 || nxt.y >= Y) {
+		return;
+	}
+	char c = lmap[0][nxt.x][nxt.y];
+	if (c == ' ' || c == '_' || c == '|') {
+		return;
+	}
+	lmap[1][player.coor.x][player.coor.y] = 0;
+	player.coor = nxt;
+	lmap[1][player.coor.x][player.coor.y] = 'P';
+
+}
+
+void mleft() {
+	Coor nxt = {player.coor.x, player.coor.y - 1};
+	if (nxt.x < 0 || nxt.x >= X || nxt.y < 0 || nxt.y >= Y) {
+		return;
+	}
+	char c = lmap[0][nxt.x][nxt.y];
+	if (c == ' ' || c == '_' || c == '|') {
+		return;
+	}
+	lmap[1][player.coor.x][player.coor.y] = 0;
+	player.coor = nxt;
+	lmap[1][player.coor.x][player.coor.y] = 'P';
+
+}
+
+void mright() {
+	Coor nxt = {player.coor.x, player.coor.y + 1};
+	if (nxt.x < 0 || nxt.x >= X || nxt.y < 0 || nxt.y >= Y) {
+		return;
+	}
+	char c = lmap[0][nxt.x][nxt.y];
+	if (c == ' ' || c == '_' || c == '|') {
+		return;
+	}
+	lmap[1][player.coor.x][player.coor.y] = 0;
+	player.coor = nxt;
+	lmap[1][player.coor.x][player.coor.y] = 'P';
+	
+}
 
 void run_game(User user, char *map_name) {
 	reset_all();
@@ -122,7 +180,6 @@ void run_game(User user, char *map_name) {
 	FILE *fmap = fopen(map_name, "r");
 	init_map(fmap);
 
-	Player player;
 	init_player(&player, fmap);
 
 	fclose(fmap);
@@ -137,11 +194,28 @@ void run_game(User user, char *map_name) {
 			running = false;
 			continue;
 		}
+		else if (c == KDOWN) {
+			mdown();
+		}
+		else if (c == KUP) {
+			mup();
+		}
+		else if (c == KLEFT) {
+			mleft();
+		}
+		else if (c == KRIGHT) {
+			mright();
+		}
+		else {
+
+		}
 
 
 
 		gprint_all();
 	}
+
+	save_map(map_name, grooms, gpaths, player.coor, psize);
 	gend_screen();
 	// */
 }
