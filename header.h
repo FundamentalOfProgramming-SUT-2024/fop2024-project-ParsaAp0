@@ -87,6 +87,7 @@ int pregame_menu();
 #define RY 150
 #define ROOM_NUMBER 9
 #define PATH_NUMBER 12
+#define FLOOR_NUMBER 4
 
 typedef struct {
 	int x, y;
@@ -116,6 +117,7 @@ void run_game(User user, char* map_name);
 
 #ifndef GAMESCREEN
 #define GAMESCREEN
+#define Visibility_layer 2
 
 
 void ginit_screen();

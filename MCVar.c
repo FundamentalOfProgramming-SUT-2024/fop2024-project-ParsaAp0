@@ -21,6 +21,7 @@ char map[X][Y];
 int cons[X][Y], delayed[X][Y];
 
 
-char lmap[5][X][Y];
-int lcons[5][X][Y], ldelayed[5][X][Y], att[5][X][Y][10], satt[5][X][Y];
+char lmap[FLOOR_NUMBER][5][X][Y];
+int lcons[FLOOR_NUMBER][5][X][Y], ldelayed[FLOOR_NUMBER][5][X][Y], att[FLOOR_NUMBER][5][X][Y][10], satt[FLOOR_NUMBER][5][X][Y];
+int Visibility_power[FLOOR_NUMBER] = {0};
 

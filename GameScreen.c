@@ -1,20 +1,8 @@
 #include "header.h"
 
-extern char lmap[5][X][Y];
-extern int lcons[5][X][Y], ldelayed[5][X][Y], att[5][X][Y][10], satt[5][X][Y];
-
-void ginit_screen() {
-	initscr();
-	noecho();
-	keypad(stdscr, TRUE);
-	cbreak();
-	// for (int i = 0; i < X; i++) {
-	// 	for (int j = 0; j < Y; j++) {
-	// 		map[i][j] = ' ';
-	// 		cons[i][j] = 1;
-	// 	}
-	// }
-}
+extern char lmap[FLOOR_NUMBER][5][X][Y];
+extern int lcons[FLOOR_NUMBER][5][X][Y], ldelayed[FLOOR_NUMBER][5][X][Y], att[FLOOR_NUMBER][5][X][Y][10], satt[FLOOR_NUMBER][5][X][Y];
+extern int Visibility_power[FLOOR_NUMBER];
 
 void gend_screen() {
 	echo();
@@ -22,17 +10,47 @@ void gend_screen() {
 	endwin();
 }
 
-void gprint_all() {
+void ginit_screen() {
+	initscr();
+	noecho();
+	keypad(stdscr, TRUE);
+	cbreak();
+	if (has_colors() == false) {
+		gend_screen();
+		printf("Are you crazy? Your terminal doesn't support colors!");
+		exit(1);
+	}
+	start_color();
+	init_pair(214, 214, COLOR_BLACK);
+	//init_color(COLOR_WHITE, 700, 700, 700);
+	//init_color(COLOR_BLACK, 200, 200, 200);
+	init_pair(1, COLOR_BLACK, COLOR_WHITE);
+	attron(COLOR_PAIR(214));
+}
+
+void gprint_all(int f) {
 	
 	for (int i = 0; i < X; i++) {
 		for (int j = 0; j < Y; j++) {
 			int c = ' ';
-			for (int k = 0; k < 5; k++) {
-				if (lmap[k][i][j]) {
-					c = lmap[k][i][j];
+			for (int k = 4; k >= 0; k--) {
+				if (lmap[f][k][i][j] && (k != Visibility_layer || Visibility_power[f] == false)) {
+					c = lmap[f][k][i][j];
+					for (int q = 0; q < satt[f][k][i][j]; q++) {
+						attron(att[f][k][i][j][q]);
+					}
+					break;
 				}
 			}
 			mvaddch(i, j, c);
+			for (int k = 4; k >= 0; k--) {
+				if (lmap[f][k][i][j] && (k != Visibility_layer || Visibility_power[f] == false)) {
+					for (int q = 0; q < satt[f][k][i][j]; q++) {
+						attroff(att[f][k][i][j][q]);
+					}
+					break;
+				}
+			}
 			/*
 			if (map[i][j] != ' ' && delayed[i][j]) {
 				usleep(delayed[i][j]);
