@@ -35,11 +35,11 @@ char *get_name(int x, int y, char *validch, int min, int max) {
 				toolong_error(max);
 			}
 			else {
-				if (is_new_user(line)) {
-					break;
-				}
-				else {
+				if (!is_new_user(line)) {
 					alreadyexist_error();
+				}
+				else if (strcmp(line, "GUEST MODE") == 0) {
+					reserved_error();
 				}
 			}
 		}

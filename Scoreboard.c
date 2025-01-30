@@ -1,8 +1,9 @@
 #include "header.h"
 
-void print_hero(int number, char* title, int color, User user) {
+void print_hero(int number, char* title, int color, User user, int bold) {
 	attron(color);
 	attron(A_BOLD);
+	bold && attron(A_UNDERLINE);
 	char res[200];
 	sprintf(res, "%d: The %s --> %20s  %5d %5d %20s\n", number, title, user.name, user.point, user.gold, user.first_play);
 	for (int i = 0; i < strlen(res); i++) {
@@ -10,8 +11,9 @@ void print_hero(int number, char* title, int color, User user) {
 		mvaddch(4 + number * 2, 1 + i, res[i]);
 		refresh();
 	}
-	attroff(color);
+	bold && attroff(A_UNDERLINE);
 	attroff(A_BOLD);
+	attroff(color);
 }
 
 void print_noname(int x, char *string) {
@@ -27,6 +29,8 @@ void print_noname(int x, char *string) {
 void print_title(int x, char *string) {
 	int y = Y / 2 - strlen(string) / 2;
 	int len = strlen(string);
+
+
 	attron(A_BOLD);
 	for (int i = 0; i < len; i++) {
 		usleep(error_delay);
@@ -36,7 +40,7 @@ void print_title(int x, char *string) {
 	attroff(A_BOLD);
 }
 
-void scoreboard() {
+void scoreboard(User user) {
 	// GOAT, Legend, Master
 
 	print_title(0, "Rogue. Game of legends!");
@@ -56,7 +60,7 @@ void scoreboard() {
 		acc[size]->name = (char *) calloc(50, sizeof(char));
 		acc[size]->first_play = (char *) calloc(100, sizeof(char));
 	}
-	//printw("size: %d\n", size);
+	
 
 	for (int i = 0; i < size; i++) {
 		for (int j = i + 1; j < size; j++) {
@@ -70,16 +74,16 @@ void scoreboard() {
 
 	print_noname(4, "                                    Name  Point  Gold        Register time\n");
 	if (size >= 1) {
-		print_hero(1, "GOAT   ", COLOR_PAIR(226), *acc[0]); // Color: Gold
+		print_hero(1, "GOAT   ", COLOR_PAIR(226), *acc[0], !strcmp(user.name, acc[0]->name)); // Color: Gold
 	}
 	if (size >= 2) {
-		print_hero(2, "Legend ", COLOR_PAIR(247), *acc[1]); // Color: Silver
+		print_hero(2, "Legend ", COLOR_PAIR(247), *acc[1], !strcmp(user.name, acc[1]->name)); // Color: Silver
 	}
 	if (size >= 3) {
-		print_hero(3, "Master ", COLOR_PAIR(130), *acc[2]); // Color: Bronze
+		print_hero(3, "Master ", COLOR_PAIR(130), *acc[2], !strcmp(user.name, acc[2]->name)); // Color: Bronze
 	}
 	for (int i = 3; i < size; i++) {
-		print_hero(i + 1, "Soldier", COLOR_PAIR(15), *acc[i]); // Color: white
+		print_hero(i + 1, "Soldier", COLOR_PAIR(15), *acc[i], !strcmp(user.name, acc[i]->name)); // Color: white
 	}
 
 	getch();

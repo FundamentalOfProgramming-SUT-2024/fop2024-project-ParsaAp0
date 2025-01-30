@@ -132,6 +132,10 @@ void alreadyexist_error() {
 	print_in(X - 1, 0, "This name already exist! Try again!", 1, error_delay);
 }
 
+void reserved_error() {
+	print_in(X - 1, 0, "This name is reserved! Try again!", 1, error_delay);
+}
+
 void notvalidemail_error() {
 	print_in(X - 1, 0, "The email format is not correct. It should be like \"xx@yy.zz", 1, error_delay);
 }

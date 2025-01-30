@@ -46,6 +46,7 @@ void notcorrectpass_error();
 void tooshort_error(int lim);
 void toolong_error(int lim);
 void alreadyexist_error();
+void reserved_error();
 void notvalidemail_error();
 void notvalidpassword_error();
 void nosavedgame_error();
@@ -62,7 +63,7 @@ void sign_up();
 #ifndef SIGNIN
 #define SIGNIN
 
-User sign_in();
+User* sign_in();
 
 #endif
 
