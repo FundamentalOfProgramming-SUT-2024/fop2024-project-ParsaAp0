@@ -21,6 +21,9 @@ void ginit_screen() {
 		exit(1);
 	}
 	start_color();
+	for (int i = 1; i < 256; i++) {
+		init_pair(i, i, COLOR_BLACK);
+	}
 	init_pair(214, 214, COLOR_BLACK);
 	//init_color(COLOR_WHITE, 700, 700, 700);
 	//init_color(COLOR_BLACK, 200, 200, 200);

@@ -44,9 +44,11 @@ int main() {
 				}
 				else if (res == 3) {
 					// Settings
+					setting_menu();
 				}
 				else if (res == 4) {
 					// Scoreboard
+					// scoreboard_show();
 				}
 				else {
 					// Back

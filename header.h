@@ -80,6 +80,13 @@ int pregame_menu();
 
 #endif
 
+#ifndef SETTING_MENU
+#define SETTING_MENU
+
+void setting_menu();
+
+#endif
+
 #ifndef CREATEMAP
 #define CREATEMAP
 
@@ -139,3 +146,4 @@ void notvalidemail_error();
 void notvalidpassword_error();
 */
 #endif
+
