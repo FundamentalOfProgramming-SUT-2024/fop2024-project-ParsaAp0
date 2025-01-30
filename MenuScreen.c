@@ -15,6 +15,16 @@ void init_screen() {
 			cons[i][j] = 1;
 		}
 	}
+
+	if (has_colors() == false) {
+		gend_screen();
+		printf("Are you crazy? Your terminal doesn't support colors!");
+		exit(1);
+	}
+	start_color();
+	for (int i = 1; i < 256; i++) {
+		init_pair(i, i, COLOR_BLACK);
+	}
 }
 
 void end_screen() {

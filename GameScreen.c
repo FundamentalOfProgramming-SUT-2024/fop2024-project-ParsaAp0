@@ -15,16 +15,6 @@ void ginit_screen() {
 	noecho();
 	keypad(stdscr, TRUE);
 	cbreak();
-	if (has_colors() == false) {
-		gend_screen();
-		printf("Are you crazy? Your terminal doesn't support colors!");
-		exit(1);
-	}
-	start_color();
-	for (int i = 1; i < 256; i++) {
-		init_pair(i, i, COLOR_BLACK);
-	}
-	init_pair(214, 214, COLOR_BLACK);
 	//init_color(COLOR_WHITE, 700, 700, 700);
 	//init_color(COLOR_BLACK, 200, 200, 200);
 	init_pair(1, COLOR_BLACK, COLOR_WHITE);
