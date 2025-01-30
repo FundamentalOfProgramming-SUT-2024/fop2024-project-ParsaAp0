@@ -48,7 +48,7 @@ int main() {
 				}
 				else if (res == 4) {
 					// Scoreboard
-					// scoreboard_show();
+					scoreboard();
 				}
 				else {
 					// Back

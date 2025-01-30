@@ -87,6 +87,13 @@ void setting_menu();
 
 #endif
 
+#ifndef SCOREBOARD
+#define SCOREBOARD
+
+void scoreboard();
+
+#endif
+
 #ifndef CREATEMAP
 #define CREATEMAP
 
