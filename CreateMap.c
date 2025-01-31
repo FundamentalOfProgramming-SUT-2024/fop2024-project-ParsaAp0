@@ -10,6 +10,8 @@ static Path paths[FLOOR_NUMBER][PATH_NUMBER];
 static Coor inports[FLOOR_NUMBER], outports[FLOOR_NUMBER];
 static int psize[FLOOR_NUMBER];
 static Coor start_coor;
+static Coor rand_points[FLOOR_NUMBER][10000];
+static int rands;
 
 static int limits[ROOM_NUMBER][4] = {
 	{3, 14, 1, 48},
@@ -37,9 +39,20 @@ Y = 150
 */
 
 void set_random_point(Coor *r, int floor) {
-	int room = rand() % 9;
+	int room = rand() % ROOM_NUMBER;
+	while (rooms[floor][room].type || rooms[floor][room].hidden) {
+		room = rand() % ROOM_NUMBER;
+	}
 	r->x = rooms[floor][room].coor[0].x + 1 + rand() % (rooms[floor][room].coor[1].x - rooms[floor][room].coor[0].x - 2);
 	r->y = rooms[floor][room].coor[0].y + 1 + rand() % (rooms[floor][room].coor[1].y - rooms[floor][room].coor[0].y - 2);
+	for (int i = 0; i < rands; i++) {
+		if (r->x == rand_points[floor][i].x && r->y == rand_points[floor][i].y) {
+			set_random_point(r, floor);
+		}
+	}
+	rand_points[floor][rands].x = r->x;
+	rand_points[floor][rands].y = r->y;
+	rands++;
 }
 
 Coor *create_room(int *lim) { // coor: {x1, x2, y1, y2}
@@ -184,8 +197,42 @@ void create_horizontal_path(int k, int id1, int id2, int ly, int ltx, int ldx, i
 	psize[k]++;
 }
 
-void create_map(int k) {
+void define_rooms_type(int k) {
+	int num[ROOM_NUMBER] = {0};
+	for (int i = 0; i < psize[k]; i++) {
+		num[paths[k][i].r1]++;
+		num[paths[k][i].r2]++;
+	}
+	int b = 0;
+	for (int i = 0; i < ROOM_NUMBER; i++) {
+		if (num[i] == 1) {
+			rooms[k][i].hidden = true;
+			b = 1;
+			break;
+		}
+	}
+	if (b == 0) {
+		return;
+	}
 
+	if (k == FLOOR_NUMBER - 1) {
+		// Last Floor --> Treasure room
+		int id = rand() % ROOM_NUMBER;
+		rooms[k][id].type = 2;
+	}
+	int id = rand() % ROOM_NUMBER;
+	while (rooms[k][id].type) {
+		id = rand() % ROOM_NUMBER;
+	}
+	rooms[k][id].type = 1; // Enchant room
+	id = rand() % ROOM_NUMBER;
+	while (rooms[k][id].type) {
+		id = rand() % ROOM_NUMBER;
+	}
+	rooms[k][id].type = 3; // Nightmare room
+}
+
+void create_map(int k) {
 	for (int i = 0; i < ROOM_NUMBER; i++) {
 		rooms[k][i].coor = create_room(limits[i]);
 	}
@@ -246,10 +293,6 @@ void create_map(int k) {
 			doorr[id2]--;
 		}
 	}
-	if (k > 0)
-		set_random_point(inports + k, k);
-	if (k + 1 < FLOOR_NUMBER)
-		set_random_point(outports + k, k);
 }
 
 void dfs(int id, int seen[], int k) {
@@ -263,13 +306,13 @@ void dfs(int id, int seen[], int k) {
 }
 
 int check_map(int k) {
-	int num[ROOM_NUMBER + 1] = {0};
+	int num[ROOM_NUMBER] = {0};
 	for (int i = 0; i < psize[k]; i++) {
 		num[paths[k][i].r1]++;
 		num[paths[k][i].r2]++;
 	}
 	int b = 0;
-	for (int i = 0; i <= ROOM_NUMBER; i++) {
+	for (int i = 0; i < ROOM_NUMBER; i++) {
 		if (num[i] == 1) {
 			b = 1;
 		}
@@ -290,6 +333,8 @@ static void reset_all() {
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		for (int i = 0; i < ROOM_NUMBER; i++) {
 			free(rooms[k][i].coor);
+			rooms[k][i].hidden = 0;
+			rooms[k][i].type = 0;
 		}
 		for (int i = 0; i < psize[k]; i++) {
 			free(paths[k][i].coor);
@@ -306,7 +351,7 @@ static void save_map(char* name) {
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fprintf(fmap, "Rooms:\n");
 		for (int j = 0; j < ROOM_NUMBER; j++) {
-			fprintf(fmap, "\t%d %d %d %d\n", rooms[k][j].coor[0].x, rooms[k][j].coor[0].y, rooms[k][j].coor[1].x, rooms[k][j].coor[1].y);
+			fprintf(fmap, "\t%d %d %d %d %d %d\n", rooms[k][j].coor[0].x, rooms[k][j].coor[0].y, rooms[k][j].coor[1].x, rooms[k][j].coor[1].y, rooms[k][j].type, rooms[k][j].hidden);
 		}
 		fprintf(fmap, "Paths number: %d\nPaths:\n", psize[k]);
 		for (int j = 0; j < psize[k]; j++) {
@@ -361,6 +406,12 @@ char* make_map() {
 				free(rooms[k][i].coor);
 			create_map(k);
 		}
+
+		define_rooms_type(k);
+		if (k > 0)
+			set_random_point(inports + k, k);
+		if (k + 1 < FLOOR_NUMBER)
+			set_random_point(outports + k, k);
 	}
 	set_random_point(&start_coor, 0);
 	// set_start_point();
@@ -374,7 +425,6 @@ char* make_map() {
 	strcpy(result, name);
 	return result;
 }
-
 
 char* find_last_map() {
 	char name[15] = "map";
@@ -404,6 +454,7 @@ char* find_last_map() {
 	strcpy(result, name);
 	return result;
 }
+
 /*
 void print_in_map() {
 	for (int i = 2; i < RX; i++) {

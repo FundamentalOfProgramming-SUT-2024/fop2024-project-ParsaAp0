@@ -110,6 +110,8 @@ typedef struct {
 
 typedef struct {
 	Coor *coor;
+	int type; // Type 0: Normal, Type 1: Enchant, Type 2: Treasure, Type 3: Nightmare
+	int hidden;
 //	int *coor;
 } Room;
 
@@ -143,6 +145,7 @@ void run_game(User user, char* map_name);
 #define GAMESCREEN
 // #define Visibility_layer 2
 
+#define CID_MAP 249
 #define PLAYER_CHAR "P"
 #define PORT_CHAR "<"
 #define SPORT_CHAR "^"

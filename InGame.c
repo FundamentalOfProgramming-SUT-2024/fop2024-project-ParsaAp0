@@ -35,6 +35,8 @@ void reset_all() {
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		for (int i = 0; i < ROOM_NUMBER; i++) {
 			free(grooms[k][i].coor);
+			grooms[k][i].hidden = 0;
+			grooms[k][i].type = 0;
 		}
 		for (int i = 0; i < psize[k]; i++) {
 			free(gpaths[k][i].coor);
@@ -69,7 +71,7 @@ void init_map(FILE *fmap) {
 		fscanf(fmap, "%*s");
 		for (int j = 0; j < ROOM_NUMBER; j++) {
 			grooms[k][j].coor = (Coor *) calloc(2, sizeof(Coor));
-			fscanf(fmap, "%d %d %d %d", &grooms[k][j].coor[0].x, &grooms[k][j].coor[0].y, &grooms[k][j].coor[1].x, &grooms[k][j].coor[1].y);
+			fscanf(fmap, "%d %d %d %d %d %d", &grooms[k][j].coor[0].x, &grooms[k][j].coor[0].y, &grooms[k][j].coor[1].x, &grooms[k][j].coor[1].y, &grooms[k][j].type, &grooms[k][j].hidden);
 		}
 		fscanf(fmap, "%*s %*s %d\nPaths:", &psize[k]);
 		
@@ -99,7 +101,7 @@ void save_map(char* name) {
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fprintf(fmap, "Rooms:\n");
 		for (int j = 0; j < ROOM_NUMBER; j++) {
-			fprintf(fmap, "\t%d %d %d %d\n", grooms[k][j].coor[0].x, grooms[k][j].coor[0].y, grooms[k][j].coor[1].x, grooms[k][j].coor[1].y);
+			fprintf(fmap, "\t%d %d %d %d %d %d\n", grooms[k][j].coor[0].x, grooms[k][j].coor[0].y, grooms[k][j].coor[1].x, grooms[k][j].coor[1].y, grooms[k][j].type, grooms[k][j].hidden);
 		}
 		fprintf(fmap, "Paths number: %d\nPaths:\n", psize[k]);
 		for (int j = 0; j < psize[k]; j++) {
@@ -146,13 +148,22 @@ void gmove(int dx, int dy) {
 }
 
 void check_visibility() {
-	
+	if (Visibility_power == -1) Visibility_power = 0;
 	for (int i = 0; i < ROOM_NUMBER; i++) {
 		int a1 = grooms[player.floor][i].coor[0].x, a2 = grooms[player.floor][i].coor[1].x;
 		if (grooms[player.floor][i].coor[0].x <= player.coor.x && player.coor.x <= grooms[player.floor][i].coor[1].x && grooms[player.floor][i].coor[0].y <= player.coor.y && player.coor.y <= grooms[player.floor][i].coor[1].y) {
-			for (int xi = a1; xi <= a2; xi++) {
-				for (int yi = grooms[player.floor][i].coor[0].y; yi <= grooms[player.floor][i].coor[1].y; yi++) {
-					visibility[player.floor][xi][yi] = 1;
+			if (grooms[player.floor][i].type == 3) {
+				// This is a nightmare room
+				if (Visibility_power == 0) {
+					Visibility_power = -1;
+				}
+
+			}
+			else {
+				for (int xi = a1; xi <= a2; xi++) {
+					for (int yi = grooms[player.floor][i].coor[0].y; yi <= grooms[player.floor][i].coor[1].y; yi++) {
+						visibility[player.floor][xi][yi] = 1;
+					}
 				}
 			}
 		}
@@ -218,7 +229,11 @@ void run_game(User user, char *map_name) {
 			gmove(-1, 1);
 		}
 		else if (c == 'm') {
-			Visibility_power = !Visibility_power;
+			if (Visibility_power == 1)
+				Visibility_power = 0;
+			else {
+				Visibility_power = 1;
+			}
 		}
 		else if (c == ']' && player.floor + 1 < FLOOR_NUMBER && player.coor.x == outports[player.floor].x && player.coor.y == outports[player.floor].y) {
 			player.floor++;
