@@ -126,14 +126,31 @@ char* find_last_map();
 #ifndef INGAME
 #define INGAME
 
+typedef struct {
+	Coor coor;
+	int floor;
+	int health;
+	int att[10];
+	int satt;
+
+} Player;
+
 void run_game(User user, char* map_name);
 
 #endif
 
 #ifndef GAMESCREEN
 #define GAMESCREEN
-#define Visibility_layer 2
+// #define Visibility_layer 2
 
+#define PLAYER_CHAR "P"
+#define PORT_CHAR "<"
+#define SPORT_CHAR "^"
+#define PATH_CHAR "#"
+#define DOOR_CHAR "+"
+#define INROOM_CHAR "."
+#define VWALL_CHAR "|"
+#define HWALL_CHAR "_"
 
 void ginit_screen();
 void gend_screen();

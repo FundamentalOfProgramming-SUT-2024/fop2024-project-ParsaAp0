@@ -322,7 +322,7 @@ static void save_map(char* name) {
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
 			for (int j = 1; j < RY - 1; j++) {
-				fprintf(fmap, "1");
+				fprintf(fmap, "0");
 			}
 			fprintf(fmap, "\n");
 		}

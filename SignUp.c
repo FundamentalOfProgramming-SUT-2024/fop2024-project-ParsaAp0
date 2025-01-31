@@ -269,7 +269,7 @@ void sign_up() {
         perror("Couldn't prepare formatted string");
     }
 
-	print_in(X - 1, 0, "The sign up process is completed successfully...", 1, error_delay); // It don't print the last '.'.
+	print_in(X - 1, 0, "The sign up process is completed successfully....", 1, error_delay);
 	print_all();
 	usleep(success_delay);
 	
