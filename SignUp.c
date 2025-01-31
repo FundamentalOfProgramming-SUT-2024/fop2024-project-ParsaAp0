@@ -1,4 +1,5 @@
 #include "header.h"
+#include <time.h>
 
 extern char normalch[100], numberch[11];
 
@@ -40,6 +41,9 @@ char *get_name(int x, int y, char *validch, int min, int max) {
 				}
 				else if (strcmp(line, "GUEST MODE") == 0) {
 					reserved_error();
+				}
+				else {
+					break;
 				}
 			}
 		}
@@ -258,13 +262,20 @@ void sign_up() {
 		return;
 	}
 
-	print_in(X - 1, 0, "The sign up process is completed successfully..", 1, error_delay); // It don't print the last '.'.
+	time_t time_raw_format;
+    char timestring[50];
+    time(&time_raw_format);
+    if(strftime(timestring,50,"%Y.%d.%m,%H:%M:%S",localtime(&time_raw_format)) == 0){
+        perror("Couldn't prepare formatted string");
+    }
+
+	print_in(X - 1, 0, "The sign up process is completed successfully...", 1, error_delay); // It don't print the last '.'.
 	print_all();
 	usleep(success_delay);
 	
 
 	FILE *fptr = fopen("players.txt", "a");
-	fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n\tpoint: 0\n\tgold: 0\n\tfirst_play: 0.0.0,00:00:00\n}\n", name, email, password);
+	fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n\tpoint: 0\n\tgold: 0\n\tfirst_play: %s\n}\n", name, email, password, timestring);
 	fclose(fptr);
 
 
