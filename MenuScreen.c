@@ -5,6 +5,7 @@ extern char map[X][Y];
 extern int cons[X][Y], delayed[X][Y];
 
 void init_screen() {
+	setlocale(LC_ALL, "");
 	initscr();
 	noecho();
 	keypad(stdscr, TRUE);

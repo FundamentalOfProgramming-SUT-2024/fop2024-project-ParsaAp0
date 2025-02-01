@@ -7,6 +7,6 @@ run: exec
 rtest: test
 	@./test
 test: test.c
-	@gcc test.c -lncurses -o test 
+	@gcc test.c -lncursesw -o test 
 exec: $(OBJS)
-	@gcc $(OBJS) -lncurses -o exec
+	@gcc $(OBJS) -lncursesw -lncurses -o exec

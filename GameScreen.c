@@ -1,6 +1,7 @@
 #include "header.h"
 
 extern Player player;
+extern char PLAYER_CHAR[4];
 
 extern Room grooms[FLOOR_NUMBER][ROOM_NUMBER];
 extern Path gpaths[FLOOR_NUMBER][PATH_NUMBER];
@@ -9,6 +10,12 @@ extern int psize[FLOOR_NUMBER];
 extern int Visibility_power;
 extern int visibility[FLOOR_NUMBER][X][Y];
 extern int floor_seen[FLOOR_NUMBER];
+
+
+extern int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER];
+extern Gold gold[FLOOR_NUMBER][1000];
+extern Food food[FLOOR_NUMBER][1000];
+extern Spell spell[FLOOR_NUMBER][1000];
 
 void gend_screen() {
 	echo();
@@ -30,8 +37,9 @@ void gprint_all() {
 	// 2: Rooms
 	// 3: Paths
 	// 4: In & Out ports
-	// 5: Player, Enemies, Loots
-	// 6: Visibility
+	// 5: Loots
+	// 6: Player, Enemies
+	// 7: Visibility
 
 	// Border
 	attron(COLOR_PAIR(CID_MAP));
@@ -103,6 +111,7 @@ void gprint_all() {
 		Path *v = gpaths[f] + i;
 		for (int i = 1; i < -1 + (*v).size; i++) {
 			mvprintw((*v).coor[i].x, (*v).coor[i].y, PATH_CHAR);
+			// mvaddch((*v).coor[i].x, (*v).coor[i].y, '#');
 		}
 		attroff(COLOR_PAIR(CID_MAP));
 
@@ -152,7 +161,7 @@ void gprint_all() {
 					attron(COLOR_PAIR(88));
 					break;
 			}
-			mvprintw((*v).coor[(*v).size - 1].x, (*v).coor[(*v).size - 1].y, "+");
+			mvprintw((*v).coor[(*v).size - 1].x, (*v).coor[(*v).size - 1].y, DOOR_CHAR);
 			switch (grooms[f][(*v).r2].type) {
 				case 0:
 					attroff(COLOR_PAIR(CID_MAP));
@@ -183,8 +192,14 @@ void gprint_all() {
 	}
 	attroff(COLOR_PAIR(CID_MAP));
 
+	// Loots
+	attron(COLOR_PAIR(220));
+	for (int i = 0; i < golds[f]; i++) {
+		mvprintw(gold[f][i].coor.x, gold[f][i].coor.y, GOLD_CHAR);
+	}
+	attroff(COLOR_PAIR(220));
 
-	// Player, Enemies, Loots
+	// Player, Enemies
 
 	for (int i = 0; i < player.satt; i++) {
 		attron(player.att[i]);
@@ -219,94 +234,7 @@ void gprint_all() {
 		}
 	}
 
+	mvprintw(X - 1, 5, "Hunger: %2d\t\tHealth: %5d\t\tGold: %5d\t\tPoint: %4d\n", player.health, player.hunger, player.gold, player.point);
+
 	mvprintw(X - 1, Y - 1, " ");
 }
-/*
-void refresh_all() {
-	for (int i = 0; i < X; i++) {
-		for (int j = 0; j < Y; j++) {
-			if (cons[i][j]) {
-				map[i][j] = ' ';
-			}
-			delayed[i][j] = 0;
-		}
-	}
-	clear();
-	print_all();
-}
-
-void print_in(int x, int y, char *string, int con, int delay) {
-	int nx = x, ny = y, len = strlen(string);
-	for (int i = 0; i < len; i++) {
-		//mvaddch(nx, ny, string[i]);
-		delayed[nx][ny] = delay;
-		map[nx][ny] = string[i];
-		cons[nx][ny] = con;
-		ny++;
-	}
-}
-
-void print_inhdr(int x, char *string, int delay) {
-	print_in(x, Y / 2 - strlen(string) / 2, string, 0, delay);
-}
-
-void clear_all() {
-	for (int i = 0; i < X; i++) {
-		for (int j = 0; j < Y; j++) {
-			map[i][j] = ' ';
-			delayed[i][j] = 0;
-			cons[i][j] = 0;
-		}
-	}
-	clear();
-	refresh();
-}
-
-void clear_all_row(int i) {
-	for (int j = 0; j < Y; j++) {
-		map[i][j] = ' ';
-		delayed[i][j] = 0;
-		cons[i][j] = 0;
-	}
-	clear();
-	refresh();
-}
-
-void invalidch_error() {
-	print_in(X - 1, 0, "Invalid character", 1, error_delay);
-}
-
-void usernamenotfound_error() {
-	print_in(X - 1, 0, "Wrong username! Try again!", 1, error_delay);
-}
-
-void notcorrectpass_error() {
-	print_in(X - 1, 0, "Wrong password! Try again!", 1, error_delay);
-}
-
-void tooshort_error(int lim) {
-	char mess[50] = "Too short!! at least ";
-	sprintf(mess + strlen(mess), "%d", lim);
-	strcat(mess, " characters are needed.");
-	print_in(X - 1, 0, mess, 1, error_delay);
-}
-
-void toolong_error(int lim) {
-	char mess[50] = "Too long!! at most ";
-	sprintf(mess + strlen(mess), "%d", lim);
-	strcat(mess, " characters are needed.");
-	print_in(X - 1, 0, mess, 1, error_delay);
-}
-
-void alreadyexist_error() {
-	print_in(X - 1, 0, "This name already exist! Try again!", 1, error_delay);
-}
-
-void notvalidemail_error() {
-	print_in(X - 1, 0, "The email format is not correct. It should be like \"xx@yy.zz", 1, error_delay);
-}
-
-void notvalidpassword_error() {
-	print_in(X - 1, 0, "Password should contains at least one digit, one capital letter and one small letter", 1, error_delay);
-}
-*/

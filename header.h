@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <locale.h>
 
 #define error_delay 10000
 #define head_delay 50000
@@ -120,6 +121,23 @@ typedef struct {
 	Coor *coor;
 } Path;
 
+typedef struct {
+	Coor coor;
+	int value;
+	int type; // Normal Gold, Black Gold
+} Gold;
+/*
+Floor 1: 500 Gold
+Floor 2: 1000 Gold
+Floor 3: 1500 Gold
+Floor 4: 2000 Gold
+*/
+
+typedef struct {
+	Coor coor;
+	int type;
+} Spell, Food;
+
 char* make_map();
 char* find_last_map();
 
@@ -131,10 +149,9 @@ char* find_last_map();
 typedef struct {
 	Coor coor;
 	int floor;
-	int health;
+	int health, hunger, gold, point;
 	int att[10];
 	int satt;
-
 } Player;
 
 void run_game(User user, char* map_name);
@@ -146,14 +163,18 @@ void run_game(User user, char* map_name);
 // #define Visibility_layer 2
 
 #define CID_MAP 249
-#define PLAYER_CHAR "P"
 #define PORT_CHAR "<"
-#define SPORT_CHAR "^"
+#define SPORT_CHAR "\u2227"
 #define PATH_CHAR "#"
 #define DOOR_CHAR "+"
 #define INROOM_CHAR "."
 #define VWALL_CHAR "|"
 #define HWALL_CHAR "_"
+#define Spell_CHAR "\u160F"
+#define FOOD_CHAR "\u0DA2"
+#define GOLD_CHAR "\u058E"
+// Among us u0D9E
+// #define FOOD_CHAR "\u1570"
 
 void ginit_screen();
 void gend_screen();

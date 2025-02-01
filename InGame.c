@@ -11,17 +11,21 @@
 
 
 Player player;
+char PLAYER_CHAR[10] = "\u1403";
 
 Room grooms[FLOOR_NUMBER][ROOM_NUMBER];
 Path gpaths[FLOOR_NUMBER][PATH_NUMBER];
 Coor inports[FLOOR_NUMBER], outports[FLOOR_NUMBER];
 int psize[FLOOR_NUMBER];
 
-char lmap[FLOOR_NUMBER][5][X][Y];
-int lcons[FLOOR_NUMBER][5][X][Y], ldelayed[FLOOR_NUMBER][5][X][Y], att[FLOOR_NUMBER][5][X][Y][10], satt[FLOOR_NUMBER][5][X][Y];
 int Visibility_power;
 int visibility[FLOOR_NUMBER][X][Y];
 int floor_seen[FLOOR_NUMBER];
+
+int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER];
+Gold gold[FLOOR_NUMBER][1000];
+Food food[FLOOR_NUMBER][1000];
+Spell spell[FLOOR_NUMBER][1000];
 
 /*
 	Layer 0: Base of the map: rooms, paths, traps, ...
@@ -64,7 +68,7 @@ void init_map(FILE *fmap) {
 	player.att[player.satt++] = A_BOLD;
 
 	// Colors: "White", "Red", "Green", "Blue", "Magenta", "Cyan", "Yellow"
-	int colid[7] = {7, 1, 2, 4, 163, 14, 3};
+	int colid[7] = {7, 1, 2, 4, 163, 14, 220};
 	player.att[player.satt++] = COLOR_PAIR(colid[player_color]);
 	// Reading rooms and paths.
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
@@ -84,6 +88,13 @@ void init_map(FILE *fmap) {
 		}
 		fscanf(fmap, "%*s %*s %d %d", &inports[k].x, &inports[k].y);
 		fscanf(fmap, "%*s %*s %d %d", &outports[k].x, &outports[k].y);
+
+		fscanf(fmap, "%*s %*s %d\nGolds:", &golds[k]);
+		// fprintf(fmap, "Golds number: %d\nGolds:\n", golds[k]);
+		for (int i = 0; i < golds[k]; i++) {
+			fscanf(fmap, "%d %d %d", &gold[k][i].coor.x, &gold[k][i].coor.y, &gold[k][i].value);
+		}
+
 		fscanf(fmap, "%*s:");
 		for (int i = 3; i < RX - 1; i++) {
 			for (int j = 1; j < RY - 1; j++) {
@@ -113,6 +124,10 @@ void save_map(char* name) {
 		}
 		fprintf(fmap, "Inport coor: %d %d\n", inports[k].x, inports[k].y);
 		fprintf(fmap, "Outport coor: %d %d\n", outports[k].x, outports[k].y);
+		fprintf(fmap, "Golds number: %d\nGolds:\n", golds[k]);
+		for (int i = 0; i < golds[k]; i++) {
+			fprintf(fmap, "%d %d %d\n", gold[k][i].coor.x, gold[k][i].coor.y, gold[k][i].value);
+		}
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
 			for (int j = 1; j < RY - 1; j++) {
@@ -123,28 +138,6 @@ void save_map(char* name) {
 	}
 	
 	fclose(fmap);
-}
-
-void gmove(int dx, int dy) {
-	Coor nxt = {player.coor.x + dx, player.coor.y + dy};
-	if (nxt.x < 0 || nxt.x >= X || nxt.y < 0 || nxt.y >= Y) {
-		return;
-	}
-	for (int i = 0; i < ROOM_NUMBER; i++) {
-		int a1 = grooms[player.floor][i].coor[0].x, a2 = grooms[player.floor][i].coor[1].x;
-		if (grooms[player.floor][i].coor[0].x < nxt.x && nxt.x < grooms[player.floor][i].coor[1].x && grooms[player.floor][i].coor[0].y < nxt.y && nxt.y < grooms[player.floor][i].coor[1].y) {
-			player.coor = nxt;
-			return;
-		}
-	}
-	for (int i = 0; i < psize[player.floor]; i++) {
-		for (int j = 0; j < gpaths[player.floor][i].size; j++) {
-			if (nxt.x == gpaths[player.floor][i].coor[j].x && nxt.y == gpaths[player.floor][i].coor[j].y) {
-				player.coor = nxt;
-				return;
-			}
-		}
-	}
 }
 
 void check_visibility() {
@@ -185,7 +178,68 @@ void check_visibility() {
 	}
 }
 
+void gold_struct_copy(Gold i, Gold j) {
+	memcpy((void *) &i, (void *) &j, sizeof(Gold));
+}
+
+int gmove(int dx, int dy) {
+	Coor nxt = {player.coor.x + dx, player.coor.y + dy};
+	if (nxt.x < 0 || nxt.x >= X || nxt.y < 0 || nxt.y >= Y) {
+		return 0;
+	}
+	for (int i = 0; i < ROOM_NUMBER; i++) {
+		int a1 = grooms[player.floor][i].coor[0].x, a2 = grooms[player.floor][i].coor[1].x;
+		if (grooms[player.floor][i].coor[0].x < nxt.x && nxt.x < grooms[player.floor][i].coor[1].x && grooms[player.floor][i].coor[0].y < nxt.y && nxt.y < grooms[player.floor][i].coor[1].y) {
+			check_visibility();
+			player.coor = nxt;
+			return 1;
+		}
+	}
+	for (int i = 0; i < psize[player.floor]; i++) {
+		for (int j = 0; j < gpaths[player.floor][i].size; j++) {
+			if (nxt.x == gpaths[player.floor][i].coor[j].x && nxt.y == gpaths[player.floor][i].coor[j].y) {
+				player.coor = nxt;
+				check_visibility();
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+void check_loot() {
+	// Gold
+	for (int i = 0; i < golds[player.floor]; i++) {
+		gold[player.floor][i];
+		if (player.coor.x == gold[player.floor][i].coor.x && player.coor.y == gold[player.floor][i].coor.y) {
+			player.gold += gold[player.floor][i].value;
+			memcpy(gold[player.floor] + i, gold[player.floor] + golds[player.floor] - 1, sizeof(Gold));
+			golds[player.floor]--;
+			break;
+		}
+	}
+
+
+	// Black Gold
+
+	// Normal Food
+
+	// Good Food
+
+	// Enchant Food
+	
+	// Rotten Food
+
+	// Health Spell
+
+	// Damage Spell
+
+	// Speed Spell
+}
+
 void run_game(User user, char *map_name) {
+	player.gold = user.gold;
+	player.point = user.point;
 
 	FILE *fmap = fopen(map_name, "r");
 	init_map(fmap);
@@ -194,7 +248,7 @@ void run_game(User user, char *map_name) {
 	ginit_screen();
 	
 	
-	bool running = true;
+	bool running = true, f_c = 0, g_c = 0;
 	floor_seen[player.floor] = 1;
 	check_visibility();
 	gprint_all();
@@ -205,28 +259,44 @@ void run_game(User user, char *map_name) {
 			continue;
 		}
 		else if (c == '1') { // down left
-			gmove(1, -1);
+			strcpy(PLAYER_CHAR, "\u1405");
+			while (gmove(1, -1) && f_c);
+			// gmove(1, -1);
 		}
 		else if (c == '2') { // down
-			gmove(1, 0);
+			strcpy(PLAYER_CHAR, "\u1401");
+			while (gmove(1, 0) && f_c);
+			// gmove(1, 0);
 		}
 		else if (c == '3') { // down right
-			gmove(1, 1);
+			strcpy(PLAYER_CHAR, "\u140A");
+			while (gmove(1, 1) && f_c);
+			// gmove(1, 1);
 		}
 		else if (c == '4') { // left
-			gmove(0, -1);
+			strcpy(PLAYER_CHAR, "\u140A");
+			while (gmove(0, -1) && f_c);
+			// gmove(0, -1);
 		}
 		else if (c == '6') { // right
-			gmove(0, 1);
+			strcpy(PLAYER_CHAR, "\u1405");
+			while (gmove(0, 1) && f_c);
+			// gmove(0, 1);
 		}
 		else if (c == '7') { // up left
-			gmove(-1, -1);
+			strcpy(PLAYER_CHAR, "\u1405");
+			while (gmove(-1, -1) && f_c);
+			// gmove(-1, -1);
 		}
 		else if (c == '8') { // up
-			gmove(-1, 0);
+			strcpy(PLAYER_CHAR, "\u1403");
+			while (gmove(-1, 0) && f_c);
+			// gmove(-1, 0);
 		}
 		else if (c == '9') { // up right
-			gmove(-1, 1);
+			strcpy(PLAYER_CHAR, "\u140A");
+			while (gmove(-1, 1) && f_c);
+			// gmove(-1, 1);
 		}
 		else if (c == 'm') {
 			if (Visibility_power == 1)
@@ -235,20 +305,25 @@ void run_game(User user, char *map_name) {
 				Visibility_power = 1;
 			}
 		}
-		else if (c == ']' && player.floor + 1 < FLOOR_NUMBER && player.coor.x == outports[player.floor].x && player.coor.y == outports[player.floor].y) {
+		else if (c == KRIGHT && player.floor + 1 < FLOOR_NUMBER && player.coor.x == outports[player.floor].x && player.coor.y == outports[player.floor].y) {
 			player.floor++;
 			player.coor.x = inports[player.floor].x;
 			player.coor.y = inports[player.floor].y;
 			floor_seen[player.floor] = 1;
 		}
-		else if (c == '[' && player.floor > 0 && player.coor.x == inports[player.floor].x && player.coor.y == inports[player.floor].y) {
+		else if (c == KLEFT && player.floor > 0 && player.coor.x == inports[player.floor].x && player.coor.y == inports[player.floor].y) {
 			player.floor--;
 			player.coor.x = outports[player.floor].x;
 			player.coor.y = outports[player.floor].y;
 			floor_seen[player.floor] = 1;
 		}
 
+
+		f_c = c == 'f';
+		g_c = c == 'g';
+
 		check_visibility();
+		check_loot();
 		gprint_all();
 	}
 

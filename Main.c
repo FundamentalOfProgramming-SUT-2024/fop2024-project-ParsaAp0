@@ -33,7 +33,7 @@ int main() {
 					end_screen();
 					run_game(*user, map_name);
 					init_screen();
-				}
+				} 
 				else if (res == 2) {
 					// Resume Game
 					char* map_name = find_last_map();
