@@ -164,7 +164,8 @@ typedef struct {
 
 	int att[10];
 	int satt;
-	int mace, dagger, magicw, arrow, sword;
+	int weapon[5];
+	// int mace, dagger, magicw, arrow, sword;
 } Player;
 
 void run_game(User *user, char* map_name);

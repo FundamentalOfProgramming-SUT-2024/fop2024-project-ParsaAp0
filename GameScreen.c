@@ -209,15 +209,15 @@ void gprint_all() {
 	}
 	mvprintw(11, RY + 2, "Weapon inventory:");
 	mvprintw(13, RY + 2, MACE_CHAR);
-	mvprintw(13, RY + 5, "Mace       %3d", player.mace);
+	mvprintw(13, RY + 5, "Mace       %3d", player.weapon[0]);
 	mvprintw(15, RY + 2, DAGGER_CHAR);
-	mvprintw(15, RY + 5, "Dagger     %3d", player.dagger);
+	mvprintw(15, RY + 5, "Dagger     %3d", player.weapon[1]);
 	mvprintw(17, RY + 2, MAGICWAND_CHAR);
-	mvprintw(17, RY + 5, "Magic Wand %3d", player.magicw);
+	mvprintw(17, RY + 5, "Magic Wand %3d", player.weapon[2]);
 	mvprintw(19, RY + 2, ARROW_CHAR);
-	mvprintw(19, RY + 5, "Arrow      %3d", player.arrow);
+	mvprintw(19, RY + 5, "Arrow      %3d", player.weapon[3]);
 	mvprintw(21, RY + 2, SWORD_CHAR);
-	mvprintw(21, RY + 5, "Sword      %3d", player.sword);
+	mvprintw(21, RY + 5, "Sword      %3d", player.weapon[4]);
 
 
 	attron(A_BOLD);

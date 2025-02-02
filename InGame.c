@@ -131,7 +131,7 @@ void init_map(FILE *fmap) {
 		fscanf(fmap, "%d ", player.sinventory + i);
 	}
 
-	fscanf(fmap, "%*s %d %d %d %d %d\n", &player.mace, &player.dagger, &player.magicw, &player.arrow, &player.sword);
+	fscanf(fmap, "%*s %d %d %d %d %d\n", &player.weapon[0], &player.weapon[1], &player.weapon[2], &player.weapon[3], &player.weapon[4]);
 	player.att[player.satt++] = A_BOLD;
 
 	// Colors: "White", "Red", "Green", "Blue", "Magenta", "Cyan", "Yellow"
@@ -199,7 +199,7 @@ void save_map(char* name) {
 	for (int i = 0; i < player.ssize; i++) {
 		fprintf(fmap, "%d ", player.sinventory[i]);
 	}
-	fprintf(fmap, "Weapons: %d %d %d %d %d\n", player.mace, player.dagger, player.magicw, player.arrow, player.sword);
+	fprintf(fmap, "Weapons: %d %d %d %d %d\n", player.weapon[0], player.weapon[1], player.weapon[2], player.weapon[3], player.weapon[4]);
 	fprintf(fmap, "\n");
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fprintf(fmap, "Rooms:\n");
@@ -366,24 +366,19 @@ void check_loot() {
 	}
 
 	// Weapons
-	// for (int i = 0; i < spells[player.floor]; i++) {
-	// 	if (player.coor.x == spell[player.floor][i].coor.x && player.coor.y == spell[player.floor][i].coor.y) {
-	// 		if (grooms[player.floor][room_id].type == 3) {
-	// 			memcpy(spell[player.floor] + i, spell[player.floor] + spells[player.floor] - 1, sizeof(Spell));
-	// 			spells[player.floor]--;
-	// 			break;
-	// 		}
-	// 		if (player.ssize < 5) {
-	// 			player.sinventory[player.ssize++] = spell[player.floor][i].type;
-	// 			memcpy(spell[player.floor] + i, spell[player.floor] + spells[player.floor] - 1, sizeof(Spell));
-	// 			spells[player.floor]--;
-	// 		}
-	// 		else {
-	// 			spell_inventory_full_massege();
-	// 		}
-	// 		break;
-	// 	}
-	// }
+	for (int i = 0; i < weapons[player.floor]; i++) {
+		if (player.coor.x == weapon[player.floor][i].coor.x && player.coor.y == weapon[player.floor][i].coor.y) {
+			if (grooms[player.floor][room_id].type == 3) {
+				memcpy(weapon[player.floor] + i, weapon[player.floor] + weapons[player.floor] - 1, sizeof(Weapon));
+				weapons[player.floor]--;
+				break;
+			}
+			player.weapon[weapon[player.floor][i].type] += weapon[player.floor][i].number;
+			memcpy(weapon[player.floor] + i, weapon[player.floor] + weapons[player.floor] - 1, sizeof(Weapon));
+			weapons[player.floor]--;
+			break;
+		}
+	}
 }
 
 void use_food(int id) {
