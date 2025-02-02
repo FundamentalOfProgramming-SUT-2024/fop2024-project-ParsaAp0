@@ -12,10 +12,11 @@ extern int visibility[FLOOR_NUMBER][X][Y];
 extern int floor_seen[FLOOR_NUMBER];
 
 
-extern int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER];
+extern int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER];
 extern Gold gold[FLOOR_NUMBER][1000];
 extern Food food[FLOOR_NUMBER][1000];
 extern Spell spell[FLOOR_NUMBER][1000];
+extern Weapon weapon[FLOOR_NUMBER][1000];
 
 void gend_screen() {
 	echo();
@@ -56,52 +57,27 @@ void gprint_all() {
 	attroff(COLOR_PAIR(CID_MAP));
 
 	// ROOMS
+	int rcp[4] = {CID_MAP, 93, 220, 88};
 	int f = player.floor;
 	for (int i = 0; i < ROOM_NUMBER; i++) {
 		Room *v = grooms[f] + i;
-		switch (v->type) {
-			case 0:
-				attron(COLOR_PAIR(CID_MAP));
-				break;
-			case 1:
-				attron(COLOR_PAIR(93));
-				break;
-			case 2:
-				attron(COLOR_PAIR(220));
-				break;
-			case 3:
-				attron(COLOR_PAIR(88));
-				break;
-		}
+		attron(COLOR_PAIR(rcp[v->type]));
 		for (int xi = v->coor[0].x + 1; xi < v->coor[1].x; xi++) {
 			for (int yi = v->coor[0].y + 1; yi < v->coor[1].y; yi++) {
-				mvprintw(xi, yi, INROOM_CHAR);
+				mvprintw(xi, yi, INROOM_CHAR); /////////////////// use mvaddch to deal with wide ones
 			}
 		}
 		for (int yi = v->coor[0].y; yi <= v->coor[1].y; yi++) {
-			mvprintw(v->coor[0].x, yi, HWALL_CHAR);
+			mvprintw(v->coor[0].x, yi, HWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
 			if (yi != v->coor[0].y && yi != v->coor[1].y) {
-				mvprintw(v->coor[1].x, yi, HWALL_CHAR);
+				mvprintw(v->coor[1].x, yi, HWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
 			}
 		}
 		for (int xi = v->coor[0].x + 1; xi <= v->coor[1].x; xi++) {
-			mvprintw(xi, v->coor[0].y, VWALL_CHAR);
-			mvprintw(xi, v->coor[1].y, VWALL_CHAR);
+			mvprintw(xi, v->coor[0].y, VWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
+			mvprintw(xi, v->coor[1].y, VWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
 		}
-		switch (v->type) {
-			case 0:
-				attroff(COLOR_PAIR(CID_MAP));
-				break;
-			case 1:
-				attroff(COLOR_PAIR(93));
-				break;
-			case 2:
-				attroff(COLOR_PAIR(220));
-				break;
-			case 3:
-				attroff(COLOR_PAIR(88));
-				break;
-		}
+		attroff(COLOR_PAIR(rcp[v->type]));
 	}
 
 	// Paths
@@ -110,71 +86,18 @@ void gprint_all() {
 		Path *v = gpaths[f] + i;
 		for (int i = 1; i < -1 + (*v).size; i++) {
 			mvprintw((*v).coor[i].x, (*v).coor[i].y, PATH_CHAR);
-			// mvaddch((*v).coor[i].x, (*v).coor[i].y, '#');
 		}
 		attroff(COLOR_PAIR(CID_MAP));
 
 		if (grooms[f][(*v).r2].hidden == 0 || Visibility_power) {
-			switch (grooms[f][(*v).r1].type) {
-				case 0:
-					attron(COLOR_PAIR(CID_MAP));
-					break;
-				case 1:
-					attron(COLOR_PAIR(93));
-					break;
-				case 2:
-					attron(COLOR_PAIR(220));
-					break;
-				case 3:
-					attron(COLOR_PAIR(88));
-					break;
-			}
+			attron(COLOR_PAIR(rcp[grooms[f][(*v).r1].type]));
 			mvprintw((*v).coor[0].x, (*v).coor[0].y, DOOR_CHAR);
-			switch (grooms[f][(*v).r1].type) {
-				case 0:
-					attroff(COLOR_PAIR(CID_MAP));
-					break;
-				case 1:
-					attroff(COLOR_PAIR(93));
-					break;
-				case 2:
-					attroff(COLOR_PAIR(220));
-					break;
-				case 3:
-					attroff(COLOR_PAIR(88));
-					break;
-			}
+			attroff(COLOR_PAIR(rcp[grooms[f][(*v).r1].type]));
 		}
 		if (grooms[f][(*v).r1].hidden == 0 || Visibility_power) {
-			switch (grooms[f][(*v).r2].type) {
-				case 0:
-					attron(COLOR_PAIR(CID_MAP));
-					break;
-				case 1:
-					attron(COLOR_PAIR(93));
-					break;
-				case 2:
-					attron(COLOR_PAIR(220));
-					break;
-				case 3:
-					attron(COLOR_PAIR(88));
-					break;
-			}
-			mvprintw((*v).coor[(*v).size - 1].x, (*v).coor[(*v).size - 1].y, DOOR_CHAR);
-			switch (grooms[f][(*v).r2].type) {
-				case 0:
-					attroff(COLOR_PAIR(CID_MAP));
-					break;
-				case 1:
-					attroff(COLOR_PAIR(93));
-					break;
-				case 2:
-					attroff(COLOR_PAIR(220));
-					break;
-				case 3:
-					attroff(COLOR_PAIR(88));
-					break;
-			}
+			attron(COLOR_PAIR(rcp[grooms[f][(*v).r2].type]));
+			mvprintw((*v).coor[(*v).size - 1].x, (*v).coor[(*v).size - 1].y, DOOR_CHAR); /////////////////// use mvaddch to deal with wide ones
+			attroff(COLOR_PAIR(rcp[grooms[f][(*v).r2].type]));
 		}
 	}
 
@@ -192,11 +115,16 @@ void gprint_all() {
 	attroff(COLOR_PAIR(CID_MAP));
 
 	// Loots
-	int gcp[2] = {220, 94};
+	// int gcp[2] = {220, 94};
 	for (int i = 0; i < golds[f]; i++) {
-		attron(COLOR_PAIR(gcp[gold[f][i].type]));
-		mvprintw(gold[f][i].coor.x, gold[f][i].coor.y, GOLD_CHAR);
-		attroff(COLOR_PAIR(gcp[gold[f][i].type]));
+		attron(COLOR_PAIR(220));
+		if (gold[f][i].type == 0) {
+			mvprintw(gold[f][i].coor.x, gold[f][i].coor.y, GOLD_CHAR);
+		}
+		else {
+			mvprintw(gold[f][i].coor.x, gold[f][i].coor.y, BLACK_GOLD_CHAR);
+		}
+		attroff(COLOR_PAIR(220));
 	}
 
 	int fcp[4] = {46, 160, 93, 46};
@@ -210,6 +138,27 @@ void gprint_all() {
 		attron(COLOR_PAIR(scp[spell[f][i].type]));
 		mvprintw(spell[f][i].coor.x, spell[f][i].coor.y, SPELL_CHAR);
 		attroff(COLOR_PAIR(scp[spell[f][i].type]));
+	}
+	for (int i = 0; i < weapons[f]; i++) {
+		// attron(COLOR_PAIR(scp[spell[f][i].type]));
+		switch (weapon[f][i].type) {
+			case 0:
+				mvprintw(weapon[f][i].coor.x, weapon[f][i].coor.y, MACE_CHAR);
+				break;
+			case 1:
+				mvprintw(weapon[f][i].coor.x, weapon[f][i].coor.y, DAGGER_CHAR);
+				break;
+			case 2:
+				mvprintw(weapon[f][i].coor.x, weapon[f][i].coor.y, MAGICWAND_CHAR);
+				break;
+			case 3:
+				mvprintw(weapon[f][i].coor.x, weapon[f][i].coor.y, ARROW_CHAR);
+				break;
+			case 4:
+				mvprintw(weapon[f][i].coor.x, weapon[f][i].coor.y, SWORD_CHAR);
+				break;
+		}
+		// attroff(COLOR_PAIR(scp[spell[f][i].type]));
 	}
 
 	// Player, Enemies
@@ -258,6 +207,18 @@ void gprint_all() {
 		mvprintw(9, RY + 2 + i * 3, SPELL_CHAR);
 		attroff(COLOR_PAIR(scp[player.sinventory[i]]));
 	}
+	mvprintw(11, RY + 2, "Weapon inventory:");
+	mvprintw(13, RY + 2, MACE_CHAR);
+	mvprintw(13, RY + 5, "Mace       %3d", player.mace);
+	mvprintw(15, RY + 2, DAGGER_CHAR);
+	mvprintw(15, RY + 5, "Dagger     %3d", player.dagger);
+	mvprintw(17, RY + 2, MAGICWAND_CHAR);
+	mvprintw(17, RY + 5, "Magic Wand %3d", player.magicw);
+	mvprintw(19, RY + 2, ARROW_CHAR);
+	mvprintw(19, RY + 5, "Arrow      %3d", player.arrow);
+	mvprintw(21, RY + 2, SWORD_CHAR);
+	mvprintw(21, RY + 5, "Sword      %3d", player.sword);
+
 
 	attron(A_BOLD);
 	mvprintw(X - 1, 5, "Hunger: %3d\t\tHealth: %3d\t\tGold: %5d\t\tPoint: %5d\n", player.hunger, player.health, player.gold, player.point);

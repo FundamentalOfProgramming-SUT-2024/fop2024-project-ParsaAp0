@@ -22,10 +22,11 @@ int Visibility_power;
 int visibility[FLOOR_NUMBER][X][Y];
 int floor_seen[FLOOR_NUMBER];
 
-int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER];
+int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER];
 Gold gold[FLOOR_NUMBER][1000];
 Food food[FLOOR_NUMBER][1000];
 Spell spell[FLOOR_NUMBER][1000];
+Weapon weapon[FLOOR_NUMBER][1000];
 
 int power_boost = 1;
 int speed_boost = 1;
@@ -89,7 +90,7 @@ static void reset(int k) {
 		gpaths[k][i].r1 = gpaths[k][i].r2 = gpaths[k][i].size = 0;
 	}
 	psize[k] = 0;
-	golds[k] = foods[k] = spells[k] = 0;
+	golds[k] = foods[k] = spells[k] = weapons[k] = 0;
 }
 
 static void reset_all() {
@@ -129,6 +130,8 @@ void init_map(FILE *fmap) {
 	for (int i = 0; i < player.ssize; i++) {
 		fscanf(fmap, "%d ", player.sinventory + i);
 	}
+
+	fscanf(fmap, "%*s %d %d %d %d %d\n", &player.mace, &player.dagger, &player.magicw, &player.arrow, &player.sword);
 	player.att[player.satt++] = A_BOLD;
 
 	// Colors: "White", "Red", "Green", "Blue", "Magenta", "Cyan", "Yellow"
@@ -167,6 +170,10 @@ void init_map(FILE *fmap) {
 		for (int i = 0; i < spells[k]; i++) {
 			fscanf(fmap, "%d %d %d\n", &spell[k][i].type, &spell[k][i].coor.x, &spell[k][i].coor.y);
 		}
+		fscanf(fmap, "%*s %*s %d %*s", &weapons[k]);
+		for (int i = 0; i < weapons[k]; i++) {
+			fscanf(fmap, "%d %d %d %d\n", &weapon[k][i].type, &weapon[k][i].number, &weapon[k][i].coor.x, &weapon[k][i].coor.y);
+		}
 
 		fscanf(fmap, "%*s:");
 		for (int i = 3; i < RX - 1; i++) {
@@ -192,6 +199,7 @@ void save_map(char* name) {
 	for (int i = 0; i < player.ssize; i++) {
 		fprintf(fmap, "%d ", player.sinventory[i]);
 	}
+	fprintf(fmap, "Weapons: %d %d %d %d %d\n", player.mace, player.dagger, player.magicw, player.arrow, player.sword);
 	fprintf(fmap, "\n");
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fprintf(fmap, "Rooms:\n");
@@ -219,6 +227,10 @@ void save_map(char* name) {
 		fprintf(fmap, "Spells number: %d\nSpells:\n", spells[k]);
 		for (int i = 0; i < spells[k]; i++) {
 			fprintf(fmap, "%d %d %d\n", spell[k][i].type, spell[k][i].coor.x, spell[k][i].coor.y);
+		}
+		fprintf(fmap, "Weapons number: %d\nWeapons:\n", weapons[k]);
+		for (int i = 0; i < weapons[k]; i++) {
+			fprintf(fmap, "%d %d %d %d\n", weapon[k][i].type, weapon[k][i].number ,weapon[k][i].coor.x, weapon[k][i].coor.y);
 		}
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
@@ -352,6 +364,26 @@ void check_loot() {
 			break;
 		}
 	}
+
+	// Weapons
+	// for (int i = 0; i < spells[player.floor]; i++) {
+	// 	if (player.coor.x == spell[player.floor][i].coor.x && player.coor.y == spell[player.floor][i].coor.y) {
+	// 		if (grooms[player.floor][room_id].type == 3) {
+	// 			memcpy(spell[player.floor] + i, spell[player.floor] + spells[player.floor] - 1, sizeof(Spell));
+	// 			spells[player.floor]--;
+	// 			break;
+	// 		}
+	// 		if (player.ssize < 5) {
+	// 			player.sinventory[player.ssize++] = spell[player.floor][i].type;
+	// 			memcpy(spell[player.floor] + i, spell[player.floor] + spells[player.floor] - 1, sizeof(Spell));
+	// 			spells[player.floor]--;
+	// 		}
+	// 		else {
+	// 			spell_inventory_full_massege();
+	// 		}
+	// 		break;
+	// 	}
+	// }
 }
 
 void use_food(int id) {
@@ -422,24 +454,15 @@ void food_inventory_menu() {
 	}
 	clear();
 }
+
 void use_spell(int id) {
 	int type = player.sinventory[id];
 	// switch (type) {
 	// 	case 0:
-	// 		player.hunger += MAX_HUNGER / 3;
-	// 		player.health += MAX_HEALTH / 5;
 	// 		break;
 	// 	case 1:
-	// 		player.hunger += MAX_HUNGER / 2;
-	// 		player.health += MAX_HEALTH / 4;
 	// 		break;
 	// 	case 2:
-	// 		player.hunger += MAX_HUNGER / 3;
-	// 		player.health += MAX_HEALTH / 5;
-	// 		break;
-	// 	case 3:
-	// 		player.hunger += MAX_HUNGER / 5;
-	// 		player.health -= MAX_HEALTH / 6;
 	// 		break;
 	// }
 	if (player.hunger > MAX_HUNGER) {

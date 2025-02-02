@@ -1,5 +1,5 @@
 #include "header.h"
-
+// Getting segment fault for the sixth time of making new map
 int main() {
 	init_screen();
 

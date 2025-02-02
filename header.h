@@ -138,6 +138,12 @@ typedef struct {
 // Food types: 0: Normal, 1: Supreme, 2: Magic, 3: Rotten
 // Spell types: 0: Health(Yellow), 1: Speed(Purple), 2: Power(Red)
 
+typedef struct {
+	Coor coor;
+	int number, type;
+} Weapon;
+// Mace, Dagger, Magicw, Arrow, Sword
+
 char* make_map();
 char* find_last_map();
 
@@ -158,6 +164,7 @@ typedef struct {
 
 	int att[10];
 	int satt;
+	int mace, dagger, magicw, arrow, sword;
 } Player;
 
 void run_game(User *user, char* map_name);
@@ -179,11 +186,14 @@ void run_game(User *user, char* map_name);
 
 #define SPELL_CHAR "\u160F"
 #define FOOD_CHAR "\u0DA2"
-#define GOLD_CHAR "\u058E"
+// #define GOLD_CHAR "\u058E"
+#define GOLD_CHAR "\u26C3"
+#define BLACK_GOLD_CHAR "\u26C1"
 
 #define MACE_CHAR "\u2692"
 #define DAGGER_CHAR "\U0001F5E1"
-#define MAGICWAND_CHAR "\U0001FA84"
+// #define MAGICWAND_CHAR "\U0001FA84"
+#define MAGICWAND_CHAR "\u222E"
 #define ARROW_CHAR "\u27B3"
 #define SWORD_CHAR "\u2694"
 #define AMONGUS_CHAR "\u0D9E"

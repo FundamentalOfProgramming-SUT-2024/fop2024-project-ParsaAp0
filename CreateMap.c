@@ -13,10 +13,11 @@ static Coor start_coor;
 static Coor rand_points[FLOOR_NUMBER][10000];
 static int rands[FLOOR_NUMBER];
 
-static int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER];
+static int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER];
 static Gold gold[FLOOR_NUMBER][1000];
 static Food food[FLOOR_NUMBER][1000];
 static Spell spell[FLOOR_NUMBER][1000];
+static Weapon weapon[FLOOR_NUMBER][1000];
 
 static int limits[ROOM_NUMBER][4] = {
 	{4, 14, 1, 43},
@@ -43,12 +44,12 @@ static int inside_room(Coor c, int f) {
 }
 
 void set_non_treasure_random_point(Coor *r, int floor) {
-	int room = rand() % ROOM_NUMBER;
-	while (rooms[floor][room].type == 2) {
-		room = rand() % ROOM_NUMBER;
-	}
 	int c = 0, x = 0, y = 0;
 	do {
+		int room = rand() % ROOM_NUMBER;
+		while (rooms[floor][room].type == 2) {
+			room = rand() % ROOM_NUMBER;
+		}
 		// printf("rands: %d\n", rands[floor]);
 		c = 0;
 		x = rooms[floor][room].coor[0].x + 1 + rand() % (rooms[floor][room].coor[1].x - rooms[floor][room].coor[0].x - 2);
@@ -69,15 +70,15 @@ void set_non_treasure_random_point(Coor *r, int floor) {
 
 void set_treasure_random_point(Coor *r) {
 	int floor = FLOOR_NUMBER - 1;
-	int room = 0;
-	for (int i = 0; i < ROOM_NUMBER; i++) {
-		if (rooms[floor][i].type == 2) {
-			room = i;
-			break;
-		}
-	}
 	int c = 0, x = 0, y = 0;
 	do {
+		int room = 0;
+		for (int i = 0; i < ROOM_NUMBER; i++) {
+			if (rooms[floor][i].type == 2) {
+				room = i;
+				break;
+			}
+		}
 		// printf("rands: %d\n", rands[floor]);
 		c = 0;
 		x = rooms[floor][room].coor[0].x + 1 + rand() % (rooms[floor][room].coor[1].x - rooms[floor][room].coor[0].x - 2);
@@ -97,15 +98,15 @@ void set_treasure_random_point(Coor *r) {
 }
 
 void set_enchant_random_point(Coor *r, int floor) {
-	int room = 0;
-	for (int i = 0; i < ROOM_NUMBER; i++) {
-		if (rooms[floor][i].type == 1) {
-			room = i;
-			break;
-		}
-	}
 	int c = 0, x = 0, y = 0;
 	do {
+		int room = 0;
+		for (int i = 0; i < ROOM_NUMBER; i++) {
+			if (rooms[floor][i].type == 1) {
+				room = i;
+				break;
+			}
+		}
 		c = 0;
 		x = rooms[floor][room].coor[0].x + 1 + rand() % (rooms[floor][room].coor[1].x - rooms[floor][room].coor[0].x - 2);
 		y = rooms[floor][room].coor[0].y + 1 + rand() % (rooms[floor][room].coor[1].y - rooms[floor][room].coor[0].y - 2);
@@ -124,12 +125,12 @@ void set_enchant_random_point(Coor *r, int floor) {
 }
 
 void set_normal_random_point(Coor *r, int floor) {
-	int room = rand() % ROOM_NUMBER;
-	while (rooms[floor][room].type || rooms[floor][room].hidden) {
-		room = rand() % ROOM_NUMBER;
-	}
 	int c = 0, x = 0, y = 0;
 	do {
+		int room = rand() % ROOM_NUMBER;
+		while (rooms[floor][room].type || rooms[floor][room].hidden) {
+			room = rand() % ROOM_NUMBER;
+		}
 		// printf("rands: %d\n", rands[floor]);
 		c = 0;
 		x = rooms[floor][room].coor[0].x + 1 + rand() % (rooms[floor][room].coor[1].x - rooms[floor][room].coor[0].x - 2);
@@ -148,11 +149,31 @@ void set_normal_random_point(Coor *r, int floor) {
 	rands[floor]++;
 }
 
-void set_random_point(Coor *r, int floor) {
-	int room = rand() % ROOM_NUMBER;
+void set_wide_random_point(Coor *r, int floor) {
 	int c = 0, x = 0, y = 0;
 	do {
-		// printf("rands: %d\n", rands[floor]);
+		int room = rand() % ROOM_NUMBER;
+		c = 0;
+		x = rooms[floor][room].coor[0].x + 1 + rand() % (rooms[floor][room].coor[1].x - rooms[floor][room].coor[0].x - 2);
+		y = rooms[floor][room].coor[0].y + 1 + rand() % (rooms[floor][room].coor[1].y - rooms[floor][room].coor[0].y - 2); // -3!
+		for (int i = 0; i < rands[floor]; i++) {
+			if (x == rand_points[floor][i].x && (y == rand_points[floor][i].y || y + 1 == rand_points[floor][i].y)) {
+				c = 1;
+				break;
+			}
+		}
+	} while (c);
+	r->x = x;
+	r->y = y;
+	rand_points[floor][rands[floor]].x = r->x;
+	rand_points[floor][rands[floor]].y = r->y;
+	rands[floor]++;
+}
+
+void set_random_point(Coor *r, int floor) {
+	int c = 0, x = 0, y = 0;
+	do {
+		int room = rand() % ROOM_NUMBER;
 		c = 0;
 		x = rooms[floor][room].coor[0].x + 1 + rand() % (rooms[floor][room].coor[1].x - rooms[floor][room].coor[0].x - 2);
 		y = rooms[floor][room].coor[0].y + 1 + rand() % (rooms[floor][room].coor[1].y - rooms[floor][room].coor[0].y - 2);
@@ -459,7 +480,7 @@ static void reset(int k) {
 		rand_points[k][i].x = rand_points[k][i].y = 0;
 	}
 	rands[k] = 0;
-	golds[k] = foods[k] = spells[k] = 0;
+	golds[k] = foods[k] = spells[k] = weapons[k] = 0;
 }
 
 static void reset_all() {
@@ -475,6 +496,7 @@ static void save_map(char* name) {
 	fprintf(fmap, "Player State: %d %d 0 0\n", MAX_HEALTH, MAX_HUNGER); // health, hunger, fsize, ssize;
 	fprintf(fmap, "Player finv:\n");
 	fprintf(fmap, "Player sinv:\n");
+	fprintf(fmap, "Weapons: 1 0 0 0 0\n");
 	
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fprintf(fmap, "Rooms:\n");
@@ -504,6 +526,10 @@ static void save_map(char* name) {
 		for (int i = 0; i < spells[k]; i++) {
 			fprintf(fmap, "%d %d %d\n", spell[k][i].type, spell[k][i].coor.x, spell[k][i].coor.y);
 		}
+		fprintf(fmap, "Weapons number: %d\nWeapons:\n", weapons[k]);
+		for (int i = 0; i < weapons[k]; i++) {
+			fprintf(fmap, "%d %d %d %d\n", weapon[k][i].type, weapon[k][i].number ,weapon[k][i].coor.x, weapon[k][i].coor.y);
+		}
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
 			for (int j = 1; j < RY - 1; j++) {
@@ -517,7 +543,6 @@ static void save_map(char* name) {
 }
 
 void create_stuff(int f) {
-	// printf("F: %d\n", f);
 	// Gold
 	if (f != 3) {
 		int sum_gold = 1000 + f * 250, num = 9;
@@ -599,7 +624,7 @@ void create_stuff(int f) {
 	}
 
 	// Black Gold
-	int sum_gold = 1000 + f * 250, num = 3;
+	int sum_gold = 1000 + f * 250, num = 2;
 	while (num--) {
 		set_non_treasure_random_point(&gold[f][golds[f]].coor, f);
 		gold[f][golds[f]].type = 1;
@@ -688,6 +713,44 @@ void create_stuff(int f) {
 	set_enchant_random_point(&spell[f][spells[f]].coor, f);
 	spell[f][spells[f]].type = 2;
 	spells[f]++;
+
+	// Weapons
+	// Mace: Already have one
+	// Dagger
+	num = 2;
+	while (num--) {
+		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		weapon[f][weapons[f]].type = 1;
+		weapon[f][weapons[f]].number = 10;
+		weapons[f]++;
+	}
+
+	// Magic wand
+	num = 1;
+	while (num--) {
+		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		weapon[f][weapons[f]].type = 2;
+		weapon[f][weapons[f]].number = 8;
+		weapons[f]++;
+	}
+
+	// Arrow
+	num = 2;
+	while (num--) {
+		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		weapon[f][weapons[f]].type = 3;
+		weapon[f][weapons[f]].number = 20;
+		weapons[f]++;
+	}
+
+	// Sword
+	if (f == 1) {
+		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		weapon[f][weapons[f]].type = 4;
+		weapon[f][weapons[f]].number = 1;
+		weapons[f]++;
+	}
+
 }
 
 char* make_map() {
