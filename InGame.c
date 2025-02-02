@@ -63,8 +63,16 @@ void init_map(FILE *fmap) {
 	}
 
 
-	fscanf(fmap, "%*s %*s %d %d %d", &player.floor, &player.coor.x, &player.coor.y);
-	player.health = 100;
+	fscanf(fmap, "%*s %*s %d %d %d", &player.floor, &player.coor.x, &player.coor.y); // Floor, x, y
+	fscanf(fmap, "%*s %*s %d %d %d %d", &player.health, &player.hunger, &player.fsize, &player.ssize); // health, hunger, fsize, ssize;
+	fscanf(fmap, "%*s %*s");
+	for (int i = 0; i < player.fsize; i++) {
+		fscanf(fmap, "%d ", player.finventory + i);
+	}
+	fscanf(fmap, "%*s %*s");
+	for (int i = 0; i < player.ssize; i++) {
+		fscanf(fmap, "%d ", player.sinventory + i);
+	}
 	player.att[player.satt++] = A_BOLD;
 
 	// Colors: "White", "Red", "Green", "Blue", "Magenta", "Cyan", "Yellow"
@@ -89,10 +97,15 @@ void init_map(FILE *fmap) {
 		fscanf(fmap, "%*s %*s %d %d", &inports[k].x, &inports[k].y);
 		fscanf(fmap, "%*s %*s %d %d", &outports[k].x, &outports[k].y);
 
-		fscanf(fmap, "%*s %*s %d\nGolds:", &golds[k]);
+		fscanf(fmap, "%*s %*s %d %*s", &golds[k]);
 		// fprintf(fmap, "Golds number: %d\nGolds:\n", golds[k]);
 		for (int i = 0; i < golds[k]; i++) {
-			fscanf(fmap, "%d %d %d", &gold[k][i].coor.x, &gold[k][i].coor.y, &gold[k][i].value);
+			fscanf(fmap, "%d %d %d %d", &gold[k][i].type, &gold[k][i].coor.x, &gold[k][i].coor.y, &gold[k][i].value);
+		}
+
+		fscanf(fmap, "%*s %*s %d %*s", &foods[k]);
+		for (int i = 0; i < foods[k]; i++) {
+			fscanf(fmap, "%d %d %d\n", &food[k][i].type, &food[k][i].coor.x, &food[k][i].coor.y);
 		}
 
 		fscanf(fmap, "%*s:");
@@ -108,7 +121,18 @@ void init_map(FILE *fmap) {
 
 void save_map(char* name) {
 	FILE *fmap = fopen(name, "w");
-	fprintf(fmap, "start coor: %d %d %d\n", player.floor, player.coor.x, player.coor.y);
+	fprintf(fmap, "Player coor: %d %d %d\n", player.floor, player.coor.x, player.coor.y); // Floor, x, y
+	fprintf(fmap, "Player State: %d %d %d %d\n", player.health, player.hunger, player.fsize, player.ssize); // health, hunger, fsize, ssize;
+	fprintf(fmap, "Player finv: ");
+	for (int i = 0; i < player.fsize; i++) {
+		fprintf(fmap, "%d ", player.finventory[i]);
+	}
+	fprintf(fmap, "\n");
+	fprintf(fmap, "Player sinv: ");
+	for (int i = 0; i < player.ssize; i++) {
+		fprintf(fmap, "%d ", player.sinventory[i]);
+	}
+	fprintf(fmap, "\n");
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fprintf(fmap, "Rooms:\n");
 		for (int j = 0; j < ROOM_NUMBER; j++) {
@@ -126,7 +150,11 @@ void save_map(char* name) {
 		fprintf(fmap, "Outport coor: %d %d\n", outports[k].x, outports[k].y);
 		fprintf(fmap, "Golds number: %d\nGolds:\n", golds[k]);
 		for (int i = 0; i < golds[k]; i++) {
-			fprintf(fmap, "%d %d %d\n", gold[k][i].coor.x, gold[k][i].coor.y, gold[k][i].value);
+			fprintf(fmap, "%d %d %d %d\n", gold[k][i].type, gold[k][i].coor.x, gold[k][i].coor.y, gold[k][i].value);
+		}
+		fprintf(fmap, "Foods number: %d\nFoods:\n", foods[k]);
+		for (int i = 0; i < foods[k]; i++) {
+			fprintf(fmap, "%d %d %d\n", food[k][i].type, food[k][i].coor.x, food[k][i].coor.y);
 		}
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
@@ -318,9 +346,8 @@ void run_game(User user, char *map_name) {
 			floor_seen[player.floor] = 1;
 		}
 
-
-		f_c = c == 'f';
-		g_c = c == 'g';
+		f_c = (!f_c) && (c == 'f');
+		g_c = (!g_c) && (c == 'g');
 
 		check_visibility();
 		check_loot();

@@ -193,14 +193,21 @@ void gprint_all() {
 	attroff(COLOR_PAIR(CID_MAP));
 
 	// Loots
-	attron(COLOR_PAIR(220));
+	int gcp[2] = {220, 94};
 	for (int i = 0; i < golds[f]; i++) {
+		attron(COLOR_PAIR(gcp[gold[f][i].type]));
 		mvprintw(gold[f][i].coor.x, gold[f][i].coor.y, GOLD_CHAR);
+		attroff(COLOR_PAIR(gcp[gold[f][i].type]));
 	}
-	attroff(COLOR_PAIR(220));
+
+	int fcp[4] = {46, 160, 165, 46};
+	for (int i = 0; i < foods[f]; i++) {
+		attron(COLOR_PAIR(fcp[food[f][i].type]));
+		mvprintw(food[f][i].coor.x, food[f][i].coor.y, FOOD_CHAR);
+		attroff(COLOR_PAIR(fcp[food[f][i].type]));
+	}
 
 	// Player, Enemies
-
 	for (int i = 0; i < player.satt; i++) {
 		attron(player.att[i]);
 	}

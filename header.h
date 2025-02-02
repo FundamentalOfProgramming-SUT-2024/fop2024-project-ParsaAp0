@@ -137,6 +137,7 @@ typedef struct {
 	Coor coor;
 	int type;
 } Spell, Food;
+// Food types: 0: Normal, 1: Supreme, 2: Magic, 3: Rotten
 
 char* make_map();
 char* find_last_map();
@@ -145,11 +146,17 @@ char* find_last_map();
 
 #ifndef INGAME
 #define INGAME
+#define MAX_HEALTH 100
+#define MAX_HUNGER 100
 
 typedef struct {
 	Coor coor;
 	int floor;
 	int health, hunger, gold, point;
+
+	int ssize, fsize;
+	int finventory[10], sinventory[10];
+
 	int att[10];
 	int satt;
 } Player;
@@ -179,20 +186,6 @@ void run_game(User user, char* map_name);
 void ginit_screen();
 void gend_screen();
 void gprint_all();
-/*
-void print_in(int x, int y, char *string, int con, int delay);
-void print_inhdr(int x, char *string, int delay);
-void refresh_all();
-void clear_all();
-void clear_all_row(int x);
-void invalidch_error();
-void usernamenotfound_error();
-void notcorrectpass_error();
-void tooshort_error(int lim);
-void toolong_error(int lim);
-void alreadyexist_error();
-void notvalidemail_error();
-void notvalidpassword_error();
-*/
+
 #endif
 

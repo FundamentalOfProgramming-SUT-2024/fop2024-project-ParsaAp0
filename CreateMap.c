@@ -423,7 +423,11 @@ static void reset_all() {
 static void save_map(char* name) {
 	FILE *fmap = fopen(name, "w");
 
-	fprintf(fmap, "Start coor: 0 %d %d\n", start_coor.x, start_coor.y); // Floor, x, y
+	fprintf(fmap, "Player coor: 0 %d %d\n", start_coor.x, start_coor.y); // Floor, x, y
+	fprintf(fmap, "Player State: %d %d 0 0\n", MAX_HEALTH, MAX_HUNGER); // health, hunger, fsize, ssize;
+	fprintf(fmap, "Player finv:\n");
+	fprintf(fmap, "Player sinv:\n");
+	
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fprintf(fmap, "Rooms:\n");
 		for (int j = 0; j < ROOM_NUMBER; j++) {
@@ -442,7 +446,11 @@ static void save_map(char* name) {
 		fprintf(fmap, "Outport coor: %d %d\n", outports[k].x, outports[k].y);
 		fprintf(fmap, "Golds number: %d\nGolds:\n", golds[k]);
 		for (int i = 0; i < golds[k]; i++) {
-			fprintf(fmap, "%d %d %d\n", gold[k][i].coor.x, gold[k][i].coor.y, gold[k][i].value);
+			fprintf(fmap, "%d %d %d %d\n", gold[k][i].type, gold[k][i].coor.x, gold[k][i].coor.y, gold[k][i].value);
+		}
+		fprintf(fmap, "Foods number: %d\nFoods:\n", foods[k]);
+		for (int i = 0; i < foods[k]; i++) {
+			fprintf(fmap, "%d %d %d\n", food[k][i].type, food[k][i].coor.x, food[k][i].coor.y);
 		}
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
@@ -468,6 +476,9 @@ void create_stuff(int f) {
 			gold[f][golds[f]].type = 0;
 			if (num) {
 				gold[f][golds[f]].value = sum_gold / num / 2 + rand() % (sum_gold / num);
+				if (gold[f][golds[f]].value > sum_gold) {
+					gold[f][golds[f]].value = sum_gold / 2;
+				}
 			}
 			else {
 				gold[f][golds[f]].value = sum_gold;
@@ -487,6 +498,9 @@ void create_stuff(int f) {
 			gold[f][golds[f]].type = 0;
 			if (num) {
 				gold[f][golds[f]].value = sum_gold / num / 2 + rand() % (sum_gold / num);
+				if (gold[f][golds[f]].value > sum_gold) {
+					gold[f][golds[f]].value = sum_gold / 2;
+				}
 			}
 			else {
 				gold[f][golds[f]].value = sum_gold;
@@ -501,6 +515,9 @@ void create_stuff(int f) {
 			gold[f][golds[f]].type = 0;
 			if (num) {
 				gold[f][golds[f]].value = sum_gold / num / 2 + rand() % (sum_gold / num);
+				if (gold[f][golds[f]].value > sum_gold) {
+					gold[f][golds[f]].value = sum_gold / 2;
+				}
 			}
 			else {
 				gold[f][golds[f]].value = sum_gold;
@@ -510,16 +527,55 @@ void create_stuff(int f) {
 		}
 	}
 
-
 	// Black Gold
+	int sum_gold = 1000 + f * 250, num = 3;
+	while (num--) {
+		set_non_treasure_random_point(&gold[f][golds[f]].coor, f);
+		gold[f][golds[f]].type = 1;
+		if (num) {
+			gold[f][golds[f]].value = sum_gold / num / 2 + rand() % (sum_gold / num);
+			if (gold[f][golds[f]].value > sum_gold) {
+				gold[f][golds[f]].value = sum_gold / 2;
+			}
+		}
+		else {
+			gold[f][golds[f]].value = sum_gold;
+		}
+		sum_gold -= gold[f][golds[f]].value;
+		golds[f]++;
+	}
 
 	// Normal Food
+	num = 6;
+	while (num--) {
+		set_random_point(&food[f][foods[f]].coor, f);
+		food[f][foods[f]].type = 0;
+		foods[f]++;
+	}
 
-	// Good Food
+	// Supreme Food
+	num = 2;
+	while (num--) {
+		set_random_point(&food[f][foods[f]].coor, f);
+		food[f][foods[f]].type = 1;
+		foods[f]++;
+	}
 
-	// Enchant Food
+	// Magic Food
+	num = 2;
+	while (num--) {
+		set_random_point(&food[f][foods[f]].coor, f);
+		food[f][foods[f]].type = 2;
+		foods[f]++;
+	}
 	
 	// Rotten Food
+	num = 2;
+	while (num--) {
+		set_random_point(&food[f][foods[f]].coor, f);
+		food[f][foods[f]].type = 3;
+		foods[f]++;
+	}
 
 	// Health Spell
 
