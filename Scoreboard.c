@@ -5,11 +5,27 @@ void print_hero(int number, char* title, int color, User user, int bold) {
 	attron(A_BOLD);
 	bold && attron(A_UNDERLINE);
 	char res[200];
-	sprintf(res, "%d: The %s --> %20s  %5d %5d %20s\n", number, title, user.name, user.point, user.gold, user.first_play);
-	for (int i = 0; i < strlen(res); i++) {
-		usleep(error_delay);
-		mvaddch(4 + number * 2, 1 + i, res[i]);
-		refresh();
+	if (number <= 3) {
+		sprintf(res, "  The %s --> %20s  %5d %5d %20s\n", title, user.name, user.point, user.gold, user.first_play);
+		if (number == 1)
+			mvprintw(4 + number * 2, 0, "\U0001f947");
+		else if (number == 2)
+			mvprintw(4 + number * 2, 0, "\U0001f948");
+		else
+			mvprintw(4 + number * 2, 0, "\U0001f949");
+		for (int i = 0; i < strlen(res); i++) {
+			usleep(error_delay);
+			mvaddch(4 + number * 2, 2 + i, res[i]);
+			refresh();
+		}
+	}
+	else {
+		sprintf(res, "%d: The %s --> %20s  %5d %5d %20s\n", number, title, user.name, user.point, user.gold, user.first_play);
+		for (int i = 0; i < strlen(res); i++) {
+			usleep(error_delay);
+			mvaddch(4 + number * 2, 1 + i, res[i]);
+			refresh();
+		}
 	}
 	bold && attroff(A_UNDERLINE);
 	attroff(A_BOLD);
