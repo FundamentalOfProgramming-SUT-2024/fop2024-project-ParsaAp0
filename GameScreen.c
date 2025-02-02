@@ -32,7 +32,6 @@ void ginit_screen() {
 }
 
 void gprint_all() {
-	clear();
 	// 1: Border
 	// 2: Rooms
 	// 3: Paths
@@ -200,11 +199,17 @@ void gprint_all() {
 		attroff(COLOR_PAIR(gcp[gold[f][i].type]));
 	}
 
-	int fcp[4] = {46, 160, 165, 46};
+	int fcp[4] = {46, 160, 93, 46};
 	for (int i = 0; i < foods[f]; i++) {
 		attron(COLOR_PAIR(fcp[food[f][i].type]));
 		mvprintw(food[f][i].coor.x, food[f][i].coor.y, FOOD_CHAR);
 		attroff(COLOR_PAIR(fcp[food[f][i].type]));
+	}
+	int scp[3] = {220, 1, 93};
+	for (int i = 0; i < spells[f]; i++) {
+		attron(COLOR_PAIR(scp[spell[f][i].type]));
+		mvprintw(spell[f][i].coor.x, spell[f][i].coor.y, SPELL_CHAR);
+		attroff(COLOR_PAIR(scp[spell[f][i].type]));
 	}
 
 	// Player, Enemies
@@ -241,7 +246,38 @@ void gprint_all() {
 		}
 	}
 
-	mvprintw(X - 1, 5, "Hunger: %2d\t\tHealth: %5d\t\tGold: %5d\t\tPoint: %4d\n", player.health, player.hunger, player.gold, player.point);
+	mvprintw(3, RY + 2, "Food inventory:");
+	for (int i = 0; i < player.fsize; i++) {
+		attron(COLOR_PAIR(fcp[player.finventory[i]]));
+		mvprintw(5, RY + 2 + i * 3, FOOD_CHAR);
+		attroff(COLOR_PAIR(fcp[player.finventory[i]]));
+	}
+	mvprintw(7, RY + 2, "Spell inventory:");
+	for (int i = 0; i < player.ssize; i++) {
+		attron(COLOR_PAIR(scp[player.sinventory[i]]));
+		mvprintw(9, RY + 2 + i * 3, SPELL_CHAR);
+		attroff(COLOR_PAIR(scp[player.sinventory[i]]));
+	}
 
-	mvprintw(X - 1, Y - 1, " ");
+	attron(A_BOLD);
+	mvprintw(X - 1, 5, "Hunger: %3d\t\tHealth: %3d\t\tGold: %5d\t\tPoint: %5d\n", player.hunger, player.health, player.gold, player.point);
+	attroff(A_BOLD);
+
+	mvprintw(X - 1, Y - 2, AMONGUS_CHAR);
+}
+
+void food_inventory_empty_massege() {
+
+}
+
+void food_inventory_full_massege() {
+
+}
+
+void spell_inventory_empty_massege() {
+
+}
+
+void spell_inventory_full_massege() {
+
 }

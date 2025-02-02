@@ -31,7 +31,7 @@ int main() {
 					// New Game
 					char* map_name = make_map();
 					end_screen();
-					run_game(*user, map_name);
+					run_game(user, map_name);
 					init_screen();
 				} 
 				else if (res == 2) {
@@ -42,7 +42,7 @@ int main() {
 						continue;
 					}
 					end_screen();
-					run_game(*user, map_name);
+					run_game(user, map_name);
 					init_screen();
 				}
 				else if (res == 3) {
@@ -55,7 +55,6 @@ int main() {
 				}
 				else {
 					// Back
-
 					break;
 				}
 			}

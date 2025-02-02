@@ -16,10 +16,8 @@
 #define KRIGHT 261
 
 typedef struct {
-	char *name, *first_play;
+	char *name, *first_play, *pass, *email;
 	int gold, point;
-
-
 } User;
 
 #ifndef MAIN
@@ -99,8 +97,8 @@ void scoreboard();
 #ifndef CREATEMAP
 #define CREATEMAP
 
-#define RX 43
-#define RY 150
+#define RX 42
+#define RY 140
 #define ROOM_NUMBER 9
 #define PATH_NUMBER 12
 #define FLOOR_NUMBER 4
@@ -138,6 +136,7 @@ typedef struct {
 	int type;
 } Spell, Food;
 // Food types: 0: Normal, 1: Supreme, 2: Magic, 3: Rotten
+// Spell types: 0: Health(Yellow), 1: Speed(Purple), 2: Power(Red)
 
 char* make_map();
 char* find_last_map();
@@ -161,7 +160,7 @@ typedef struct {
 	int satt;
 } Player;
 
-void run_game(User user, char* map_name);
+void run_game(User *user, char* map_name);
 
 #endif
 
@@ -177,15 +176,26 @@ void run_game(User user, char* map_name);
 #define INROOM_CHAR "."
 #define VWALL_CHAR "|"
 #define HWALL_CHAR "_"
-#define Spell_CHAR "\u160F"
+
+#define SPELL_CHAR "\u160F"
 #define FOOD_CHAR "\u0DA2"
 #define GOLD_CHAR "\u058E"
+
+#define MACE_CHAR "\u2692"
+#define DAGGER_CHAR "\U0001F5E1"
+#define MAGICWAND_CHAR "\U0001FA84"
+#define ARROW_CHAR "\u27B3"
+#define SWORD_CHAR "\u2694"
+#define AMONGUS_CHAR "\u0D9E"
 // Among us u0D9E
 // #define FOOD_CHAR "\u1570"
 
 void ginit_screen();
 void gend_screen();
 void gprint_all();
-
+void food_inventory_empty_massege();
+void food_inventory_full_massege();
+void spell_inventory_empty_massege();
+void spell_inventory_full_massege();
 #endif
 
