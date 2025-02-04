@@ -814,21 +814,21 @@ void create_stuff(int f) {
 }
 
 char* make_map() {
-	char name[15] = "map";
-	int id = 1;
-	while (true) {
-		strcpy(name, "map");
-		sprintf(name + 3, "%d", id);
-		strcat(name, ".txt");
+	// char name[15] = "map";
+	// int id = 1;
+	// while (true) {
+	// 	strcpy(name, "map");
+	// 	sprintf(name + 3, "%d", id);
+	// 	strcat(name, ".txt");
 
-		if (access(name, F_OK) == 0) {
-			id++;
-			continue;
-		}
-		break;
-	}
-
-	srand(time(0) % 12491419 * id);
+	// 	if (access(name, F_OK) == 0) {
+	// 		id++;
+	// 		continue;
+	// 	}
+	// 	break;
+	// }
+	char name[15] = "map.txt";
+	srand(time(0) % 12491419);
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		create_map(k);
 		while (check_map(k) == 0) {
@@ -867,6 +867,8 @@ char* make_map() {
 }
 
 char* find_last_map() {
+	return "map.txt";
+	
 	char name[15] = "map";
 	int id = 0;
 

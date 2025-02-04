@@ -8,7 +8,7 @@ int is_new_user(char *line) {
 	if (players == NULL)
 		return 1;
 	char name[100], email[100], password[100];
-	while (fscanf(players, "{\n\tname: %s\n\temail: %*s\n\tpassword: %*s\n}\n", name) == 1) {
+	while (fscanf(players, "{\n\tname: %s\n\temail: %*s\n\tpassword: %*s\n\tpoint: %*d\n\tgold: %*d\n\tregister_second: %*d\n\twins: %*d\n}\n", name) == 1) {
 		if (strcmp(line, name) == 0) {
 			fclose(players);
 			return 0;
@@ -262,12 +262,12 @@ void sign_up() {
 		return;
 	}
 
-	time_t time_raw_format;
-    char timestring[50];
-    time(&time_raw_format);
-    if(strftime(timestring,50,"%Y.%d.%m,%H:%M:%S",localtime(&time_raw_format)) == 0){
-        perror("Couldn't prepare formatted string");
-    }
+	// time_t time_raw_format;
+    // char timestring[50];
+    // time(&time_raw_format);
+    // if(strftime(timestring,50,"%Y.%d.%m,%H:%M:%S",localtime(&time_raw_format)) == 0){
+    //     perror("Couldn't prepare formatted string");
+    // }
 
 	print_in(X - 1, 0, "The sign up process is completed successfully....", 1, error_delay);
 	print_all();
@@ -275,7 +275,7 @@ void sign_up() {
 	
 
 	FILE *fptr = fopen("players.txt", "a");
-	fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n\tpoint: 0\n\tgold: 0\n\tfirst_play: %s\n}\n", name, email, password, timestring);
+	fprintf(fptr, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n\tpoint: 0\n\tgold: 0\n\tregister_second: %lld\n\twins: 0\n}\n", name, email, password, (long long int) time(NULL));
 	fclose(fptr);
 
 

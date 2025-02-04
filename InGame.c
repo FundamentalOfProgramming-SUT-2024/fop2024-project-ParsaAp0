@@ -29,25 +29,26 @@ Spell spell[FLOOR_NUMBER][1000];
 Weapon weapon[FLOOR_NUMBER][1000];
 Monster monster[FLOOR_NUMBER][1000];
 
-int power_boost = 1;
-int speed_boost = 1;
+int power_boost = 0;
+int speed_boost = 0;
+int health_boost = 0;
 
 void save_user(User x) {
 	User users[1000];
 	FILE *f = fopen("players.txt", "r");
 	int sz = 0;
-	users[0].first_play = calloc(50, sizeof(char));
 	users[0].name = calloc(30, sizeof(char));
 	users[0].pass = calloc(30, sizeof(char));
 	users[0].email = calloc(50, sizeof(char));
 
-	while (f != NULL && fscanf(f, "%*s %*s %s %*s %s %*s %s %*s %d %*s %d %*s %s %*s", users[sz].name, users[sz].email, users[sz].pass, &users[sz].point, &users[sz].gold, users[sz].first_play) == 6) {
+	while (f != NULL && fscanf(f, "%*s %*s %s %*s %s %*s %s %*s %d %*s %d %*s %d %*s %d %*s", users[sz].name, users[sz].email, users[sz].pass, &users[sz].point, &users[sz].gold, &users[sz].regs, &users[sz].wins) == 7) {
 		if (strcmp(users[sz].name, x.name) == 0) {
 			users[sz].gold = x.gold;
 			users[sz].point = x.point;
+			users[sz].wins = x.wins;
+			users[sz].regs = x.regs;
 		}
 		sz++;
-		users[sz].first_play = calloc(50, sizeof(char));
 		users[sz].name = calloc(30, sizeof(char));
 		users[sz].pass = calloc(30, sizeof(char));
 		users[sz].email = calloc(50, sizeof(char));
@@ -55,7 +56,7 @@ void save_user(User x) {
 	fclose(f);
 	f = fopen("players.txt", "w");
 	for (int i = 0; i < sz; i++) {
-		fprintf(f, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n\tpoint: %d\n\tgold: %d\n\tfirst_play: %s\n}\n", users[i].name, users[i].email, users[i].pass, users[i].point, users[i].gold, users[i].first_play);
+		fprintf(f, "{\n\tname: %s\n\temail: %s\n\tpassword: %s\n\tpoint: %d\n\tgold: %d\n\tregister_second: %d\n\twins: %d\n}\n", users[i].name, users[i].email, users[i].pass, users[i].point, users[i].gold, users[i].regs, users[i].wins);
 	}
 	fclose(f);
 }
@@ -96,6 +97,7 @@ static void reset(int k) {
 
 static void reset_all() {
 	player.wselect = 0;
+	power_boost = speed_boost = health_boost = 0;
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		reset(k);
 	}
@@ -321,18 +323,18 @@ int gmove(int dx, int dy) {
 		return 0;
 	}
 
-	decrease_hunger(1);
 	return 1;
 }
 
 int hit(int x, int y, int damage, int disable) {
 	for (int i = 0; i < monsters[player.floor]; i++) {
 		if (x == monster[player.floor][i].coor.x && y == monster[player.floor][i].coor.y) {			
-			monster[player.floor][i].health -= damage;
+			monster[player.floor][i].health -= damage * (1 + (power_boost > 0));
 			if (disable == 1) {
 				monster[player.floor][i].able = 0;
 			}
 			if (monster[player.floor][i].health <= 0) {
+				player.point += (monster[player.floor][i].type + 1) * 100;
 				memcpy(monster[player.floor] + i, monster[player.floor] + --monsters[player.floor], sizeof(Monster));
 			}
 			return 1;
@@ -483,14 +485,23 @@ void food_inventory_menu() {
 
 void use_spell(int id) {
 	int type = player.sinventory[id];
-	// switch (type) {
-	// 	case 0:
-	// 		break;
-	// 	case 1:
-	// 		break;
-	// 	case 2:
-	// 		break;
-	// }
+	switch (type) {
+		case 0:
+			health_boost += 20;
+			if (health_boost > 20)
+				health_boost = 20;
+			break;
+		case 1:
+			speed_boost += 20;
+			if (speed_boost > 20)
+				speed_boost = 20;
+			break;
+		case 2:
+			power_boost += 20;
+			if (power_boost > 20)
+				power_boost = 20;
+			break;
+	}
 	if (player.hunger > MAX_HUNGER) {
 		player.hunger = MAX_HUNGER;
 	}
@@ -577,6 +588,24 @@ int get_move_distance(Coor c1, Coor c2) {
 	return (dx >= dy)? dx: dy;
 }
 
+void end_game_win() {
+	mvprintw(0, 0, "You won!!! Press any key the go back to menu.");
+	getch();
+}
+
+int end_game_check() {
+	if (player.floor != 3 || inside_room(player.coor, player.floor) == -1)
+		return false;
+	if (grooms[player.floor][inside_room(player.coor, player.floor)].type != 2)
+		return false;
+	for (int i = 0; i < golds[player.floor]; i++) {
+		if (grooms[player.floor][inside_room(gold[player.floor][i].coor, player.floor)].type == 2) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 void monster_attack() {
 	// int f = player.floor, ms = monsters[f];
 	int damage[5] = {20, 25, 30, 30, 40};
@@ -630,7 +659,6 @@ void monster_awareness_check() {
 				m->awareness = 0;
 			}
 			else if (get_move_distance(m->coor, player.coor) <= 1) {
-				mvprintw(0, 0, "GOTCHA");
 				m->awareness = 5 + (m->type == 3) * 100000;
 			}
 		}
@@ -648,7 +676,7 @@ void run_game(User *user, char *map_name) {
 	ginit_screen();
 	
 	
-	bool running = true, f_c = 0, g_c = 0;
+	bool running = true, f_c = 0, g_c = 0, game_move = 0;
 	floor_seen[player.floor] = 1;
 	check_visibility();
 	gprint_all();
@@ -661,35 +689,140 @@ void run_game(User *user, char *map_name) {
 		}
 		else if (c == '1') { // down left
 			strcpy(PLAYER_CHAR, "\u1405");
-			while (gmove(1, -1) && f_c);
+			while (gmove(1, -1) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			if (g_c == 0) {
+				check_loot();
+			}
+			decrease_hunger(1);
+
+			if (speed_boost) gmove(1, -1);
+			game_move = 1;
 		}
 		else if (c == '2') { // down
 			strcpy(PLAYER_CHAR, "\u1401");
-			while (gmove(1, 0) && f_c);
+			while (gmove(1, 0) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			if (g_c == 0) {
+				check_loot();
+			}
+			decrease_hunger(1);
+			if (speed_boost) gmove(1, 0);
+			game_move = 1;
 		}
 		else if (c == '3') { // down right
 			strcpy(PLAYER_CHAR, "\u140A");
-			while (gmove(1, 1) && f_c);
+			while (gmove(1, 1) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			if (g_c == 0) {
+				check_loot();
+			}
+			decrease_hunger(1);
+			if (speed_boost) gmove(1, 1);
+			game_move = 1;
 		}
 		else if (c == '4') { // left
 			strcpy(PLAYER_CHAR, "\u140A");
-			while (gmove(0, -1) && f_c);
+			while (gmove(0, -1) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			if (g_c == 0) {
+				check_loot();
+			}
+			decrease_hunger(1);
+			if (speed_boost) gmove(0, -1);
+			game_move = 1;
 		}
 		else if (c == '6') { // right
 			strcpy(PLAYER_CHAR, "\u1405");
-			while (gmove(0, 1) && f_c);
+			while (gmove(0, 1) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			if (g_c == 0) {
+				check_loot();
+			}
+			decrease_hunger(1);
+			if (speed_boost) gmove(0, 1);
+			game_move = 1;
 		}
 		else if (c == '7') { // up left
 			strcpy(PLAYER_CHAR, "\u1405");
-			while (gmove(-1, -1) && f_c);
+			while (gmove(-1, -1) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			if (g_c == 0) {
+				check_loot();
+			}
+			decrease_hunger(1);
+			if (speed_boost) gmove(-1, -1);
+			game_move = 1;
 		}
 		else if (c == '8') { // up
 			strcpy(PLAYER_CHAR, "\u1403");
-			while (gmove(-1, 0) && f_c);
+			while (gmove(-1, 0) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			decrease_hunger(1);
+			if (g_c == 0) {
+				check_loot();
+			}
+			if (speed_boost) gmove(-1, 0);
+			game_move = 1;
 		}
 		else if (c == '9') { // up right
 			strcpy(PLAYER_CHAR, "\u140A");
-			while (gmove(-1, 1) && f_c);
+			while (gmove(-1, 1) && f_c) {
+				if (g_c == 0) {
+					check_loot();
+				}
+				decrease_hunger(1);
+				monster_movement();
+				monster_awareness_check();
+			}
+			if (g_c == 0) {
+				check_loot();
+			}
+			decrease_hunger(1);
+			if (speed_boost) gmove(-1, 1);
+			game_move = 1;
 		}
 		else if (c == 'm') {
 			if (Visibility_power == 1)
@@ -744,43 +877,70 @@ void run_game(User *user, char *map_name) {
 					not_a_direction_massege();
 					continue;
 				}
+				player.weapon[player.wselect]--;
+
 				int dx = 1 - (c2 - '1') / 3, dy = (c2 - '1') % 3 - 1, dist = (player.wselect == 2) * 5 + 5;
 				Coor coor = {player.coor.x + dx, player.coor.y + dy};
+				weapon[player.floor][weapons[player.floor]].coor.x = coor.x;
+				weapon[player.floor][weapons[player.floor]].coor.y = coor.y;
+				weapon[player.floor][weapons[player.floor]].number = 1;
+				weapon[player.floor][weapons[player.floor]].type = player.wselect;
+				weapons[player.floor]++;
+
+
 				int Hit = false, rid = inside_room(player.coor, player.floor);
 				while (dist-- && valid_coor(coor, rid, player.floor)) {
+					weapon[player.floor][weapons[player.floor] - 1].coor.x = coor.x;
+					weapon[player.floor][weapons[player.floor] - 1].coor.y = coor.y;
 					if (hit(coor.x, coor.y, (player.wselect == 1) * 12 + (player.wselect == 2) * 15 + (player.wselect == 3) * 5, player.wselect == 2)) {
 						Hit = true;
 						break;
 					}
 					else {
+						gprint_all();
+						refresh();
+						usleep(50000);
 						coor.x += dx;
 						coor.y += dy;
 					}
 				}
-				player.weapon[player.wselect]--;
-				if (!Hit) {
-					coor.x -= dx;
-					coor.y -= dy;
-					weapon[player.floor][weapons[player.floor]].coor.x = coor.x;
-					weapon[player.floor][weapons[player.floor]].coor.y = coor.y;
-					weapon[player.floor][weapons[player.floor]].number = 1;
-					weapon[player.floor][weapons[player.floor]].type = player.wselect;
-					weapons[player.floor]++;
+				if (Hit) {
+					weapons[player.floor]--;
 				}
 			}
+			game_move = 1;
+		}
+		else {
+			// continue;
 		}
 
 		check_visibility();
 		if (g_c == 0) {
 			check_loot();
 		}
-		//monster_attack();
-		monster_movement();
+		if (end_game_check()) {
+			end_game_win();
+			user->wins++;
+			break;
+		}
+		if (game_move) {
+			monster_attack();
+			monster_movement();
+			if (player.hunger >= 80) {
+				player.health += 1 + (health_boost > 0);
+				if (player.health > 100)
+					player.health = 100;
+			}
+			if (health_boost > 0) health_boost--;
+			if (speed_boost > 0) speed_boost--;
+			if (power_boost > 0) power_boost--;
+		}
 		monster_awareness_check();
 		gprint_all();
 
 		f_c = (!f_c) && (c == 'f');
 		g_c = (!f_c) && (c == 'g');
+		game_move = 0;
 	}
 
 	save_map(map_name);

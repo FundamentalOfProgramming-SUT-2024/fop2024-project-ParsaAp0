@@ -19,6 +19,10 @@ extern Spell spell[FLOOR_NUMBER][1000];
 extern Weapon weapon[FLOOR_NUMBER][1000];
 extern Monster monster[FLOOR_NUMBER][1000];
 
+extern int power_boost;
+extern int speed_boost;
+extern int health_boost;
+
 void gend_screen() {
 	echo();
 	clear();
@@ -34,13 +38,6 @@ void ginit_screen() {
 }
 
 void gprint_all() {
-	// 1: Border
-	// 2: Rooms
-	// 3: Paths
-	// 4: In & Out ports
-	// 5: Loots
-	// 6: Player, Enemies
-	// 7: Visibility
 
 	// Border
 	attron(COLOR_PAIR(CID_MAP));
@@ -65,18 +62,18 @@ void gprint_all() {
 		attron(COLOR_PAIR(rcp[v->type]));
 		for (int xi = v->coor[0].x + 1; xi < v->coor[1].x; xi++) {
 			for (int yi = v->coor[0].y + 1; yi < v->coor[1].y; yi++) {
-				mvprintw(xi, yi, INROOM_CHAR); /////////////////// use mvaddch to deal with wide ones
+				mvprintw(xi, yi, INROOM_CHAR);
 			}
 		}
 		for (int yi = v->coor[0].y; yi <= v->coor[1].y; yi++) {
-			mvprintw(v->coor[0].x, yi, HWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
+			mvprintw(v->coor[0].x, yi, HWALL_CHAR);
 			if (yi != v->coor[0].y && yi != v->coor[1].y) {
-				mvprintw(v->coor[1].x, yi, HWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
+				mvprintw(v->coor[1].x, yi, HWALL_CHAR);
 			}
 		}
 		for (int xi = v->coor[0].x + 1; xi <= v->coor[1].x; xi++) {
-			mvprintw(xi, v->coor[0].y, VWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
-			mvprintw(xi, v->coor[1].y, VWALL_CHAR); /////////////////// use mvaddch to deal with wide ones
+			mvprintw(xi, v->coor[0].y, VWALL_CHAR);
+			mvprintw(xi, v->coor[1].y, VWALL_CHAR);
 		}
 		attroff(COLOR_PAIR(rcp[v->type]));
 	}
@@ -90,14 +87,14 @@ void gprint_all() {
 		}
 		attroff(COLOR_PAIR(CID_MAP));
 
-		if (grooms[f][(*v).r2].hidden == 0 || Visibility_power) {
+		if (grooms[f][(*v).r2].hidden == 0 || Visibility_power == 1) {
 			attron(COLOR_PAIR(rcp[grooms[f][(*v).r1].type]));
 			mvprintw((*v).coor[0].x, (*v).coor[0].y, DOOR_CHAR);
 			attroff(COLOR_PAIR(rcp[grooms[f][(*v).r1].type]));
 		}
-		if (grooms[f][(*v).r1].hidden == 0 || Visibility_power) {
+		if (grooms[f][(*v).r1].hidden == 0 || Visibility_power == 1) {
 			attron(COLOR_PAIR(rcp[grooms[f][(*v).r2].type]));
-			mvprintw((*v).coor[(*v).size - 1].x, (*v).coor[(*v).size - 1].y, DOOR_CHAR); /////////////////// use mvaddch to deal with wide ones
+			mvprintw((*v).coor[(*v).size - 1].x, (*v).coor[(*v).size - 1].y, DOOR_CHAR);
 			attroff(COLOR_PAIR(rcp[grooms[f][(*v).r2].type]));
 		}
 	}
@@ -134,7 +131,7 @@ void gprint_all() {
 		mvprintw(food[f][i].coor.x, food[f][i].coor.y, FOOD_CHAR);
 		attroff(COLOR_PAIR(fcp[food[f][i].type]));
 	}
-	int scp[3] = {220, 1, 93};
+	int scp[3] = {220, 93, 1};
 	for (int i = 0; i < spells[f]; i++) {
 		attron(COLOR_PAIR(scp[spell[f][i].type]));
 		mvprintw(spell[f][i].coor.x, spell[f][i].coor.y, SPELL_CHAR);
@@ -240,34 +237,224 @@ void gprint_all() {
 	mvprintw(21, RY + 6, "Sword      %3d", player.weapon[4]);
 	if (player.wselect == 4) attroff(A_BOLD);
 
+	attron(COLOR_PAIR(scp[0]));
+	if (health_boost > 0) {
+		int xp = 23;
+		mvprintw(xp, RY + 3, "Health boost:");
+		int x = health_boost, yp = RY + 16;
 
-	attron(A_BOLD);
-	mvprintw(X - 1, 5, "Hunger: %3d\t\tHealth: %3d\t\tGold: %5d\t\tPoint: %5d\n", player.hunger, player.health, player.gold, player.point);
-	attroff(A_BOLD);
+		for (int i = 0; i < (23) / 4; i++) {
+			int y = x;
+			if (y <= 0) y = 0;
+			switch (y) {
+				case 0:
+					mvprintw(xp, yp + i, " ");
+					break;
+				case 1:
+					mvprintw(xp, yp + i, "\u258E");
+					break;
+				case 2:
+					mvprintw(xp, yp + i, "\u258C");
+					break;
+				case 3:
+					mvprintw(xp, yp + i, "\u258A");
+					break;
+				default:
+					mvprintw(xp, yp + i, "\u2588");
+					break;
+			}
+			x -= 4;
+		}
+		mvprintw(xp, yp + 8, "(%d)", health_boost);
+	}
+	attroff(COLOR_PAIR(scp[0]));
+
+
+	attron(COLOR_PAIR(scp[1]));
+	if (speed_boost > 0) {
+		int xp = 25;
+		mvprintw(xp, RY + 3, "Speed boost:");
+		int x = speed_boost, yp = RY + 16;
+
+		for (int i = 0; i < (23) / 4; i++) {
+			int y = x;
+			if (y <= 0) y = 0;
+			switch (y) {
+				case 0:
+					mvprintw(xp, yp + i, " ");
+					break;
+				case 1:
+					mvprintw(xp, yp + i, "\u258E");
+					break;
+				case 2:
+					mvprintw(xp, yp + i, "\u258C");
+					break;
+				case 3:
+					mvprintw(xp, yp + i, "\u258A");
+					break;
+				default:
+					mvprintw(xp, yp + i, "\u2588");
+					break;
+			}
+			x -= 4;
+		}
+		mvprintw(xp, yp + 8, "(%d)", speed_boost);
+	}
+	attroff(COLOR_PAIR(scp[1]));
+
+	attron(COLOR_PAIR(scp[2]));
+	if (power_boost > 0) {
+		int xp = 27;
+		mvprintw(xp, RY + 3, "Power boost:");
+		int x = power_boost, yp = RY + 16;
+
+		for (int i = 0; i < (23) / 4; i++) {
+			int y = x;
+			if (y <= 0) y = 0;
+			switch (y) {
+				case 0:
+					mvprintw(xp, yp + i, " ");
+					break;
+				case 1:
+					mvprintw(xp, yp + i, "\u258E");
+					break;
+				case 2:
+					mvprintw(xp, yp + i, "\u258C");
+					break;
+				case 3:
+					mvprintw(xp, yp + i, "\u258A");
+					break;
+				default:
+					mvprintw(xp, yp + i, "\u2588");
+					break;
+			}
+			x -= 4;
+		}
+		mvprintw(xp, yp + 8, "(%d)", power_boost);
+	}
+	attroff(COLOR_PAIR(scp[2]));
+
+	mvprintw(X - 1, 5, "Hunger: ");
+	int x = player.hunger;
+	for (int i = 0; i < (MAX_HEALTH + 7) / 8; i++) {
+		int y = x;
+		if (y <= 0) y = 0;
+		switch (y) {
+			case 0:
+				mvprintw(X - 1, 13 + i, " ");
+				break;
+			case 1:
+				mvprintw(X - 1, 13 + i, "\u258F");
+				break;
+			case 2:
+				mvprintw(X - 1, 13 + i, "\u258E");
+				break;
+			case 3:
+				mvprintw(X - 1, 13 + i, "\u258D");
+				break;
+			case 4:
+				mvprintw(X - 1, 13 + i, "\u258C");
+				break;
+			case 5:
+				mvprintw(X - 1, 13 + i, "\u258B");
+				break;
+			case 6:
+				mvprintw(X - 1, 13 + i, "\u258A");
+				break;
+			case 7:
+				mvprintw(X - 1, 13 + i, "\u2589");
+				break;
+			default:
+				mvprintw(X - 1, 13 + i, "\u2588");
+				break;
+		}
+		x -= 8;
+	}
+	mvprintw(X - 1, 26, "(%d)", player.hunger);
+
+	mvprintw(X - 1, 35, "Health: ");
+	x = player.health;
+	for (int i = 0; i < (MAX_HEALTH + 7) / 8; i++) {
+		int y = x;
+		if (y <= 0) y = 0;
+		switch (y) {
+			case 0:
+				mvprintw(X - 1, 43 + i, " ");
+				break;
+			case 1:
+				mvprintw(X - 1, 43 + i, "\u258F");
+				break;
+			case 2:
+				mvprintw(X - 1, 43 + i, "\u258E");
+				break;
+			case 3:
+				mvprintw(X - 1, 43 + i, "\u258D");
+				break;
+			case 4:
+				mvprintw(X - 1, 43 + i, "\u258C");
+				break;
+			case 5:
+				mvprintw(X - 1, 43 + i, "\u258B");
+				break;
+			case 6:
+				mvprintw(X - 1, 43 + i, "\u258A");
+				break;
+			case 7:
+				mvprintw(X - 1, 43 + i, "\u2589");
+				break;
+			default:
+				mvprintw(X - 1, 43 + i, "\u2588");
+				break;
+		}
+		x -= 8;
+	}
+	mvprintw(X - 1, 56, "(%d)", player.health);
+
+	mvprintw(X - 1, 65, "Gold: %5d", player.gold);
+	mvprintw(X - 1, 85, "Point: %5d\n", player.point);
 
 	mvprintw(X - 1, Y - 2, AMONGUS_CHAR);
 }
 
 void food_inventory_empty_massege() {
-
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "You don't have any food to choose!");
 }
 
 void food_inventory_full_massege() {
-
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "Your food inventory is full. So you can't pick up a new food!");
 }
 
 void spell_inventory_empty_massege() {
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "You don't have any spell to choose!");
 
 }
 
 void spell_inventory_full_massege() {
-
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "Your spell inventory is full. So you can't pick up a new spell!");
 }
 
 void not_enough_ammo_to_attack_massege() {
-
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "You don't have enough amo to attack!");
 }
 
 void not_a_direction_massege() {
-
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "The button you pressed is not the direction.");
 }

@@ -126,7 +126,7 @@ User* sign_in() {
 	FILE *pls = fopen("players.txt", "r");
 	int sz = 0;
 	char names[100][50], passes[100][50];
-	while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %s\n\tpoint: %*s\n\tgold: %*s\n\tfirst_play: %*s\n}\n", names[sz], passes[sz]) == 2) {
+	while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %s\n\tpoint: %*s\n\tgold: %*s\n\tregister_second: %*d\n\twins: %*d\n}\n", names[sz], passes[sz]) == 2) {
 		sz++;
 	}
 	if (pls != NULL) fclose(pls);
@@ -162,7 +162,7 @@ User* sign_in() {
 	print_inhdr(6, "What's your password?", head_delay);
 	print_all();
 	char *password = rget_password(7, Y / 2, normalch, 7, 30, 1);
-	if (name[0] == 1) {
+	if (password[0] == 1) {
 		User *user = calloc(1, sizeof(User));
 		user->name = calloc(1, sizeof(char));
 		user->name[0] = 0;
@@ -173,7 +173,7 @@ User* sign_in() {
 		clear_all_row(7);
 		print_all();
 		password = rget_password(7, Y / 2, normalch, 7, 30, 1);
-		if (name[0] == 1) {
+		if (password[0] == 1) {
 			User *user = calloc(1, sizeof(User));
 			user->name = calloc(1, sizeof(char));
 			user->name[0] = 0;
@@ -189,15 +189,15 @@ User* sign_in() {
 
 	User *res = calloc(1, sizeof(User));
 	pls = fopen("players.txt", "r");
-	char rname[30], rdate[50];
-	int rgold, rpoint;
-	while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %*s\n\tpoint: %d\n\tgold: %d\n\tfirst_play: %s\n}\n", rname, &rpoint, &rgold, rdate) == 4) {
+	char rname[30];
+	int rgold, rpoint, rregs, rwins;
+	while (pls != NULL && fscanf(pls, "{\n\tname: %s\n\temail: %*s\n\tpassword: %*s\n\tpoint: %d\n\tgold: %d\n\tregister_second: %d\n\twins: %d\n}\n", rname, &rpoint, &rgold, &rregs, &rwins) == 5) {
 		if (strcmp(name, rname) == 0) {
 			res->name = calloc(30, sizeof(char));
 			strcpy(res->name, rname);
-			res->first_play = calloc(50, sizeof(char));
-			strcpy(res->first_play, rdate);
+			res->wins = rwins;
 			res->point = rpoint;
+			res->regs = rregs;
 			res->gold = rgold;
 			break;
 		}

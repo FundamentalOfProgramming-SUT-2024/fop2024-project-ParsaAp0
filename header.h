@@ -16,8 +16,8 @@
 #define KRIGHT 261
 
 typedef struct {
-	char *name, *first_play, *pass, *email;
-	int gold, point;
+	char *name, *pass, *email;
+	int gold, point, regs, wins;
 } User;
 
 #ifndef MAIN

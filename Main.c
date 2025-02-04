@@ -19,10 +19,10 @@ int main() {
 				user = calloc(1, sizeof(User));
 				user->name = calloc(30, sizeof(char));
 				strcpy(user->name, "GUEST MODE");
-				user->first_play = calloc(50, sizeof(char));
-				strcpy(user->first_play, "0.0.0,00:00:00");
+				user->regs = 0;
 				user->gold = 0;
 				user->point = 0;
+				user->wins = 0;
 			}
 
 			while (true) {
