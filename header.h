@@ -133,6 +133,19 @@ Floor 4: 2000 Gold
 
 typedef struct {
 	Coor coor;
+	int type, health, awareness, able;
+} Monster;
+/*
+type 0: Deamon --> 					D, hp = 5, 	Very weak	3 3 3 2
+type 1: Fire Breathing Monster --> 	F, hp = 10,	Weak		2 2 1 2
+type 2: Giant -->					G, hp = 15, Normal		1 2 2 1
+type 3: Snake -->					S, hp = 20, Strong		0 1 2 2
+type 4: Undeed -->					U, hp = 30, Very strong	0 1 1 2
+
+*/
+
+typedef struct {
+	Coor coor;
 	int type;
 } Spell, Food;
 // Food types: 0: Normal, 1: Supreme, 2: Magic, 3: Rotten
@@ -165,6 +178,7 @@ typedef struct {
 	int att[10];
 	int satt;
 	int weapon[5];
+	int wselect;
 	// int mace, dagger, magicw, arrow, sword;
 } Player;
 
@@ -199,7 +213,11 @@ void run_game(User *user, char* map_name);
 #define SWORD_CHAR "\u2694"
 #define AMONGUS_CHAR "\u0D9E"
 // Among us u0D9E
-// #define FOOD_CHAR "\u1570"
+#define DEAMON_CHAR "D"
+#define FIRE_CHAR "F"
+#define GIANT_CHAR "G"
+#define SNAKE_CHAR "S"
+#define UNDEED_CHAR "U"
 
 void ginit_screen();
 void gend_screen();
@@ -208,5 +226,8 @@ void food_inventory_empty_massege();
 void food_inventory_full_massege();
 void spell_inventory_empty_massege();
 void spell_inventory_full_massege();
+void not_enough_ammo_to_attack_massege();
+void not_a_direction_massege();
+
 #endif
 

@@ -12,11 +12,12 @@ extern int visibility[FLOOR_NUMBER][X][Y];
 extern int floor_seen[FLOOR_NUMBER];
 
 
-extern int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER];
+extern int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER], monsters[FLOOR_NUMBER];
 extern Gold gold[FLOOR_NUMBER][1000];
 extern Food food[FLOOR_NUMBER][1000];
 extern Spell spell[FLOOR_NUMBER][1000];
 extern Weapon weapon[FLOOR_NUMBER][1000];
+extern Monster monster[FLOOR_NUMBER][1000];
 
 void gend_screen() {
 	echo();
@@ -161,7 +162,13 @@ void gprint_all() {
 		// attroff(COLOR_PAIR(scp[spell[f][i].type]));
 	}
 
-	// Player, Enemies
+	// Monsters
+	char *ch[5] = {DEAMON_CHAR, FIRE_CHAR, GIANT_CHAR, SNAKE_CHAR, UNDEED_CHAR};
+	for (int i = 0; i < monsters[f]; i++) {
+		mvprintw(monster[f][i].coor.x, monster[f][i].coor.y, ch[monster[f][i].type]);
+	}
+
+	// Player
 	for (int i = 0; i < player.satt; i++) {
 		attron(player.att[i]);
 	}
@@ -208,16 +215,30 @@ void gprint_all() {
 		attroff(COLOR_PAIR(scp[player.sinventory[i]]));
 	}
 	mvprintw(11, RY + 2, "Weapon inventory:");
-	mvprintw(13, RY + 2, MACE_CHAR);
-	mvprintw(13, RY + 5, "Mace       %3d", player.weapon[0]);
-	mvprintw(15, RY + 2, DAGGER_CHAR);
-	mvprintw(15, RY + 5, "Dagger     %3d", player.weapon[1]);
-	mvprintw(17, RY + 2, MAGICWAND_CHAR);
-	mvprintw(17, RY + 5, "Magic Wand %3d", player.weapon[2]);
-	mvprintw(19, RY + 2, ARROW_CHAR);
-	mvprintw(19, RY + 5, "Arrow      %3d", player.weapon[3]);
-	mvprintw(21, RY + 2, SWORD_CHAR);
-	mvprintw(21, RY + 5, "Sword      %3d", player.weapon[4]);
+	if (player.wselect == 0) attron(A_BOLD);
+	mvprintw(13, RY + 3, MACE_CHAR);
+	mvprintw(13, RY + 6, "Mace       %3d", player.weapon[0]);
+	if (player.wselect == 0) attroff(A_BOLD);
+
+	if (player.wselect == 1) attron(A_BOLD);
+	mvprintw(15, RY + 3, DAGGER_CHAR);
+	mvprintw(15, RY + 6, "Dagger     %3d", player.weapon[1]);
+	if (player.wselect == 1) attroff(A_BOLD);
+
+	if (player.wselect == 2) attron(A_BOLD);
+	mvprintw(17, RY + 3, MAGICWAND_CHAR);
+	mvprintw(17, RY + 6, "Magic Wand %3d", player.weapon[2]);
+	if (player.wselect == 2) attroff(A_BOLD);
+	
+	if (player.wselect == 3) attron(A_BOLD);
+	mvprintw(19, RY + 3, ARROW_CHAR);
+	mvprintw(19, RY + 6, "Arrow      %3d", player.weapon[3]);
+	if (player.wselect == 3) attroff(A_BOLD);
+
+	if (player.wselect == 4) attron(A_BOLD);
+	mvprintw(21, RY + 3, SWORD_CHAR);
+	mvprintw(21, RY + 6, "Sword      %3d", player.weapon[4]);
+	if (player.wselect == 4) attroff(A_BOLD);
 
 
 	attron(A_BOLD);
@@ -240,5 +261,13 @@ void spell_inventory_empty_massege() {
 }
 
 void spell_inventory_full_massege() {
+
+}
+
+void not_enough_ammo_to_attack_massege() {
+
+}
+
+void not_a_direction_massege() {
 
 }

@@ -13,11 +13,17 @@ static Coor start_coor;
 static Coor rand_points[FLOOR_NUMBER][10000];
 static int rands[FLOOR_NUMBER];
 
-static int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER];
+static int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER], monsters[FLOOR_NUMBER];
 static Gold gold[FLOOR_NUMBER][1000];
 static Food food[FLOOR_NUMBER][1000];
 static Spell spell[FLOOR_NUMBER][1000];
 static Weapon weapon[FLOOR_NUMBER][1000];
+static Monster monster[FLOOR_NUMBER][1000];
+static int Deamon_number[4] = {3, 3, 3, 2};
+static int Fire_number[4] = {2, 2, 1, 2};
+static int Giant_number[4] = {1, 2, 2, 1};
+static int Snake_number[4] = {0, 1, 2, 2};
+static int Undeed_number[4] = {0, 1, 1, 2};
 
 static int limits[ROOM_NUMBER][4] = {
 	{4, 14, 1, 43},
@@ -193,7 +199,7 @@ void set_random_point(Coor *r, int floor) {
 
 Coor *create_room(int *lim) { // coor: {x1, x2, y1, y2}
 	Coor *res = (Coor *) calloc(2, sizeof(Coor));
-	int szx = 6 + rand() % (lim[1] - lim[0] - 5), szy = 6 + rand() % (lim[3] - lim[2] - 5);
+	int szx = 8 + rand() % (lim[1] - lim[0] - 7), szy = 8 + rand() % (lim[3] - lim[2] - 7);
 	res[0].x = lim[0] + rand() % (lim[1] - lim[0] - szx + 1);
 	res[1].x = res[0].x + 5 + rand() % (szx - 5);
 	res[0].y = lim[2] + rand() % (lim[3] - lim[2] - szy + 1);
@@ -480,7 +486,7 @@ static void reset(int k) {
 		rand_points[k][i].x = rand_points[k][i].y = 0;
 	}
 	rands[k] = 0;
-	golds[k] = foods[k] = spells[k] = weapons[k] = 0;
+	golds[k] = foods[k] = spells[k] = weapons[k] = monsters[k] = 0;
 }
 
 static void reset_all() {
@@ -529,6 +535,10 @@ static void save_map(char* name) {
 		fprintf(fmap, "Weapons number: %d\nWeapons:\n", weapons[k]);
 		for (int i = 0; i < weapons[k]; i++) {
 			fprintf(fmap, "%d %d %d %d\n", weapon[k][i].type, weapon[k][i].number ,weapon[k][i].coor.x, weapon[k][i].coor.y);
+		}
+		fprintf(fmap, "Monters number: %d\nMonsters:\n", monsters[k]);
+		for (int i = 0; i < monsters[k]; i++) {
+			fprintf(fmap, "%d %d %d %d %d %d\n", monster[k][i].type, monster[k][i].health, monster[k][i].able, monster[k][i].awareness, monster[k][i].coor.x, monster[k][i].coor.y);
 		}
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
@@ -719,7 +729,7 @@ void create_stuff(int f) {
 	// Dagger
 	num = 2;
 	while (num--) {
-		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		set_random_point(&weapon[f][weapons[f]].coor, f);
 		weapon[f][weapons[f]].type = 1;
 		weapon[f][weapons[f]].number = 10;
 		weapons[f]++;
@@ -728,7 +738,7 @@ void create_stuff(int f) {
 	// Magic wand
 	num = 1;
 	while (num--) {
-		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		set_random_point(&weapon[f][weapons[f]].coor, f);
 		weapon[f][weapons[f]].type = 2;
 		weapon[f][weapons[f]].number = 8;
 		weapons[f]++;
@@ -737,7 +747,7 @@ void create_stuff(int f) {
 	// Arrow
 	num = 2;
 	while (num--) {
-		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		set_random_point(&weapon[f][weapons[f]].coor, f);
 		weapon[f][weapons[f]].type = 3;
 		weapon[f][weapons[f]].number = 20;
 		weapons[f]++;
@@ -745,12 +755,62 @@ void create_stuff(int f) {
 
 	// Sword
 	if (f == 1) {
-		set_wide_random_point(&weapon[f][weapons[f]].coor, f);
+		set_random_point(&weapon[f][weapons[f]].coor, f);
 		weapon[f][weapons[f]].type = 4;
 		weapon[f][weapons[f]].number = 1;
 		weapons[f]++;
 	}
 
+	// Monsters
+	// Deamon
+	for (int i = 0; i < Deamon_number[f]; i++) {
+		set_random_point(&monster[f][monsters[f]].coor, f);
+		monster[f][monsters[f]].type = 0;
+		monster[f][monsters[f]].health = 5;
+		monster[f][monsters[f]].able = true;
+		monster[f][monsters[f]].awareness = 0;
+		monsters[f]++;
+	}
+
+	// Fire Breathing Monster
+	for (int i = 0; i < Fire_number[f]; i++) {
+		set_random_point(&monster[f][monsters[f]].coor, f);
+		monster[f][monsters[f]].type = 1;
+		monster[f][monsters[f]].health = 10;
+		monster[f][monsters[f]].able = true;
+		monster[f][monsters[f]].awareness = 0;
+		monsters[f]++;
+	}
+
+	// Giant
+	for (int i = 0; i < Giant_number[f]; i++) {
+		set_random_point(&monster[f][monsters[f]].coor, f);
+		monster[f][monsters[f]].type = 2;
+		monster[f][monsters[f]].health = 15;
+		monster[f][monsters[f]].able = true;
+		monster[f][monsters[f]].awareness = 0;
+		monsters[f]++;
+	}
+
+	// Snake
+	for (int i = 0; i < Snake_number[f]; i++) {
+		set_random_point(&monster[f][monsters[f]].coor, f);
+		monster[f][monsters[f]].type = 3;
+		monster[f][monsters[f]].health = 20;
+		monster[f][monsters[f]].able = true;
+		monster[f][monsters[f]].awareness = 0;
+		monsters[f]++;
+	}
+
+	// Undeed
+	for (int i = 0; i < Undeed_number[f]; i++) {
+		set_random_point(&monster[f][monsters[f]].coor, f);
+		monster[f][monsters[f]].type = 4;
+		monster[f][monsters[f]].health = 30;
+		monster[f][monsters[f]].able = true;
+		monster[f][monsters[f]].awareness = 0;
+		monsters[f]++;
+	}
 }
 
 char* make_map() {

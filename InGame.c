@@ -22,22 +22,15 @@ int Visibility_power;
 int visibility[FLOOR_NUMBER][X][Y];
 int floor_seen[FLOOR_NUMBER];
 
-int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER];
+int golds[FLOOR_NUMBER], foods[FLOOR_NUMBER], spells[FLOOR_NUMBER], weapons[FLOOR_NUMBER], monsters[FLOOR_NUMBER];
 Gold gold[FLOOR_NUMBER][1000];
 Food food[FLOOR_NUMBER][1000];
 Spell spell[FLOOR_NUMBER][1000];
 Weapon weapon[FLOOR_NUMBER][1000];
+Monster monster[FLOOR_NUMBER][1000];
 
 int power_boost = 1;
 int speed_boost = 1;
-
-/*
-	Layer 0: Base of the map: rooms, paths, traps, ...
-	Layer 1: Player and enemies
-	Layer 2: visibility of the map
-	Layer 3: Notifications and messages.
-
-*/
 
 void save_user(User x) {
 	User users[1000];
@@ -67,6 +60,14 @@ void save_user(User x) {
 	fclose(f);
 }
 
+int valid_coor(Coor c, int rid, int fid) {
+	if (grooms[fid][rid].coor[0].x == c.x || c.x == grooms[fid][rid].coor[1].x || grooms[fid][rid].coor[0].y == c.y || c.y == grooms[fid][rid].coor[1].y) {
+		// mvprintw(0, 0, "%d %d %d %d, %d %d\n", grooms[f][i].coor[0].x, grooms[f][i].coor[1].x, grooms[f][i].coor[0].y, grooms[f][i].coor[1].y, c.x, c.y);
+		return 0;
+	}
+	return 1;
+}
+
 int inside_room(Coor c, int f) {
 	int room_id = -1;
 	for (int i = 0; i < ROOM_NUMBER; i++) {
@@ -94,6 +95,7 @@ static void reset(int k) {
 }
 
 static void reset_all() {
+	player.wselect = 0;
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		reset(k);
 	}
@@ -163,18 +165,21 @@ void init_map(FILE *fmap) {
 
 		fscanf(fmap, "%*s %*s %d %*s", &foods[k]);
 		for (int i = 0; i < foods[k]; i++) {
-			fscanf(fmap, "%d %d %d\n", &food[k][i].type, &food[k][i].coor.x, &food[k][i].coor.y);
+			fscanf(fmap, "%d %d %d", &food[k][i].type, &food[k][i].coor.x, &food[k][i].coor.y);
 		}
 
 		fscanf(fmap, "%*s %*s %d %*s", &spells[k]);
 		for (int i = 0; i < spells[k]; i++) {
-			fscanf(fmap, "%d %d %d\n", &spell[k][i].type, &spell[k][i].coor.x, &spell[k][i].coor.y);
+			fscanf(fmap, "%d %d %d", &spell[k][i].type, &spell[k][i].coor.x, &spell[k][i].coor.y);
 		}
 		fscanf(fmap, "%*s %*s %d %*s", &weapons[k]);
 		for (int i = 0; i < weapons[k]; i++) {
-			fscanf(fmap, "%d %d %d %d\n", &weapon[k][i].type, &weapon[k][i].number, &weapon[k][i].coor.x, &weapon[k][i].coor.y);
+			fscanf(fmap, "%d %d %d %d", &weapon[k][i].type, &weapon[k][i].number, &weapon[k][i].coor.x, &weapon[k][i].coor.y);
 		}
-
+		fscanf(fmap, "%*s %*s %d %*s", &monsters[k]);
+		for (int i = 0; i < monsters[k]; i++) {
+			fscanf(fmap, "%d %d %d %d %d %d", &monster[k][i].type, &monster[k][i].health, &monster[k][i].able, &monster[k][i].awareness, &monster[k][i].coor.x, &monster[k][i].coor.y);
+		}
 		fscanf(fmap, "%*s:");
 		for (int i = 3; i < RX - 1; i++) {
 			for (int j = 1; j < RY - 1; j++) {
@@ -232,6 +237,10 @@ void save_map(char* name) {
 		for (int i = 0; i < weapons[k]; i++) {
 			fprintf(fmap, "%d %d %d %d\n", weapon[k][i].type, weapon[k][i].number ,weapon[k][i].coor.x, weapon[k][i].coor.y);
 		}
+		fprintf(fmap, "Monters number: %d\nMonsters:\n", monsters[k]);
+		for (int i = 0; i < monsters[k]; i++) {
+			fprintf(fmap, "%d %d %d %d %d %d\n", monster[k][i].type, monster[k][i].health, monster[k][i].able, monster[k][i].awareness, monster[k][i].coor.x, monster[k][i].coor.y);
+		}
 		fprintf(fmap, "Visibility:\n");
 		for (int i = 3; i < RX - 1; i++) {
 			for (int j = 1; j < RY - 1; j++) {
@@ -285,6 +294,11 @@ int gmove(int dx, int dy) {
 	if (nxt.x < 0 || nxt.x >= X || nxt.y < 0 || nxt.y >= Y) {
 		return 0;
 	}
+	for (int i = 0; i < monsters[player.floor]; i++) {
+		if (nxt.x == monster[player.floor][i].coor.x && nxt.y == monster[player.floor][i].coor.y) {
+			return 0;
+		}
+	}
 	for (int i = 0; i < ROOM_NUMBER; i++) {
 		if (grooms[player.floor][i].coor[0].x < nxt.x && nxt.x < grooms[player.floor][i].coor[1].x && grooms[player.floor][i].coor[0].y < nxt.y && nxt.y < grooms[player.floor][i].coor[1].y) {
 			check_visibility();
@@ -309,6 +323,22 @@ int gmove(int dx, int dy) {
 
 	decrease_hunger(1);
 	return 1;
+}
+
+int hit(int x, int y, int damage, int disable) {
+	for (int i = 0; i < monsters[player.floor]; i++) {
+		if (x == monster[player.floor][i].coor.x && y == monster[player.floor][i].coor.y) {			
+			monster[player.floor][i].health -= damage;
+			if (disable == 1) {
+				monster[player.floor][i].able = 0;
+			}
+			if (monster[player.floor][i].health <= 0) {
+				memcpy(monster[player.floor] + i, monster[player.floor] + --monsters[player.floor], sizeof(Monster));
+			}
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void check_loot() {
@@ -371,12 +401,14 @@ void check_loot() {
 			if (grooms[player.floor][room_id].type == 3) {
 				memcpy(weapon[player.floor] + i, weapon[player.floor] + weapons[player.floor] - 1, sizeof(Weapon));
 				weapons[player.floor]--;
-				break;
+				i--;
+				// break;
 			}
 			player.weapon[weapon[player.floor][i].type] += weapon[player.floor][i].number;
 			memcpy(weapon[player.floor] + i, weapon[player.floor] + weapons[player.floor] - 1, sizeof(Weapon));
 			weapons[player.floor]--;
-			break;
+			i--;
+			// break;
 		}
 	}
 }
@@ -423,7 +455,6 @@ void food_inventory_menu() {
 		food_inventory_empty_massege();
 		return;
 	}
-
 	mvprintw(6, RY + 2 + cursor * 3, SPORT_CHAR);
 	gprint_all();
 	while (running && player.fsize > 0) {
@@ -509,6 +540,103 @@ void spell_inventory_menu() {
 	clear();
 }
 
+void weapon_inventory_menu() {
+	bool running = true;
+	check_visibility();
+	gprint_all();
+	
+	int prv = player.wselect;
+	mvprintw(13 + player.wselect * 2, RY + 1, ">");
+	gprint_all();
+	while (running) {
+		int c = getch();
+		if (c == 27 || c == 'i') { // Esc
+			player.wselect = prv;
+			break;
+		}
+		else if (c == KDOWN) {
+			player.wselect = (player.wselect + 1) % 5;
+		}
+		else if (c == KUP) {
+			player.wselect = (player.wselect - 1 + 5) % 5;
+		}
+		else if (c == '\n') {
+			break;
+		}
+
+		clear();
+		mvprintw(13 + player.wselect * 2, RY + 1, ">");
+		gprint_all();
+	}
+	clear();
+}
+
+int get_move_distance(Coor c1, Coor c2) {
+	int dx = abs(c1.x - c2.x), dy = abs(c1.y - c2.y);
+
+	return (dx >= dy)? dx: dy;
+}
+
+void monster_attack() {
+	// int f = player.floor, ms = monsters[f];
+	int damage[5] = {20, 25, 30, 30, 40};
+	for (int i = 0; i < monsters[player.floor]; i++) {
+		if (get_move_distance(monster[player.floor][i].coor, player.coor) <= 1) {
+			player.health -= damage[monster[player.floor][i].type];
+		}
+	}
+	if (player.health <= 0) {
+		mvprintw(0, 0, "You Are DeaD!!!");
+	}
+}
+
+void monster_movement() {
+	for (int i = 0; i < monsters[player.floor]; i++) {
+		Monster *m = &monster[player.floor][i];
+		Coor p = {player.coor.x, player.coor.y};
+		if (inside_room(m->coor, player.floor) == inside_room(player.coor, player.floor) && m->awareness && m->able) {
+			int room_id = inside_room(m->coor, player.floor);
+			Coor nxt = {m->coor.x, m->coor.y};
+
+			if (nxt.x < p.x) nxt.x++;
+			else if (nxt.x > p.x) nxt.x--;
+
+			if (nxt.y < p.y) nxt.y++;
+			else if (nxt.y > p.y) nxt.y--;
+
+			if (nxt.x == p.x && nxt.y == p.y) {
+				continue;
+			}
+			if (nxt.x == grooms[player.floor][room_id].coor[0].x || nxt.x == grooms[player.floor][room_id].coor[1].x) {
+				nxt.x = m->coor.x;
+			}
+
+			if (nxt.y == grooms[player.floor][room_id].coor[0].y || nxt.y == grooms[player.floor][room_id].coor[1].y) {
+				nxt.y = m->coor.y;
+			}
+
+			m->coor.x = nxt.x;
+			m->coor.y = nxt.y;
+		}
+	}
+}
+
+void monster_awareness_check() {
+	for (int f = 0; f < FLOOR_NUMBER; f++) {
+		for (int i = 0; i < monsters[f]; i++) {
+			Monster *m = &monster[f][i];
+			if (m->awareness > 0) m->awareness--;
+			if (f != player.floor || inside_room(m->coor, player.floor) != inside_room(player.coor, player.floor)) {
+				m->awareness = 0;
+			}
+			else if (get_move_distance(m->coor, player.coor) <= 1) {
+				mvprintw(0, 0, "GOTCHA");
+				m->awareness = 5 + (m->type == 3) * 100000;
+			}
+		}
+	}
+}
+
 void run_game(User *user, char *map_name) {
 	player.gold = user->gold;
 	player.point = user->point;
@@ -534,42 +662,34 @@ void run_game(User *user, char *map_name) {
 		else if (c == '1') { // down left
 			strcpy(PLAYER_CHAR, "\u1405");
 			while (gmove(1, -1) && f_c);
-			// gmove(1, -1);
 		}
 		else if (c == '2') { // down
 			strcpy(PLAYER_CHAR, "\u1401");
 			while (gmove(1, 0) && f_c);
-			// gmove(1, 0);
 		}
 		else if (c == '3') { // down right
 			strcpy(PLAYER_CHAR, "\u140A");
 			while (gmove(1, 1) && f_c);
-			// gmove(1, 1);
 		}
 		else if (c == '4') { // left
 			strcpy(PLAYER_CHAR, "\u140A");
 			while (gmove(0, -1) && f_c);
-			// gmove(0, -1);
 		}
 		else if (c == '6') { // right
 			strcpy(PLAYER_CHAR, "\u1405");
 			while (gmove(0, 1) && f_c);
-			// gmove(0, 1);
 		}
 		else if (c == '7') { // up left
 			strcpy(PLAYER_CHAR, "\u1405");
 			while (gmove(-1, -1) && f_c);
-			// gmove(-1, -1);
 		}
 		else if (c == '8') { // up
 			strcpy(PLAYER_CHAR, "\u1403");
 			while (gmove(-1, 0) && f_c);
-			// gmove(-1, 0);
 		}
 		else if (c == '9') { // up right
 			strcpy(PLAYER_CHAR, "\u140A");
 			while (gmove(-1, 1) && f_c);
-			// gmove(-1, 1);
 		}
 		else if (c == 'm') {
 			if (Visibility_power == 1)
@@ -592,15 +712,71 @@ void run_game(User *user, char *map_name) {
 		}
 		else if (c == 'e') {
 			food_inventory_menu();
+			gprint_all();
+			continue;
 		}
 		else if (c == 'r') {
 			spell_inventory_menu();
+			gprint_all();
+			continue;
+		}
+		else if (c == 'i') {
+			weapon_inventory_menu();
+			gprint_all();
+			continue;
+		}
+		else if (c == ' ') {
+			if (player.wselect == 0 || player.wselect == 4) {
+				int dx[8] = {1, 1, 1, 0, 0, -1, -1, -1};
+				int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+				for (int i = 0; i < 8; i++) {
+					hit(player.coor.x + dx[i], player.coor.y + dy[i], (player.wselect == 0)? 5: 10, player.wselect == 2);
+				}
+			}
+			else {
+				gprint_all();
+				if (player.weapon[player.wselect] == 0) {
+					not_enough_ammo_to_attack_massege();
+					continue;
+				}
+				int c2 = getch();
+				if ((c2 == '5') || (c2 <= '0' || '9' < c2)) {
+					not_a_direction_massege();
+					continue;
+				}
+				int dx = 1 - (c2 - '1') / 3, dy = (c2 - '1') % 3 - 1, dist = (player.wselect == 2) * 5 + 5;
+				Coor coor = {player.coor.x + dx, player.coor.y + dy};
+				int Hit = false, rid = inside_room(player.coor, player.floor);
+				while (dist-- && valid_coor(coor, rid, player.floor)) {
+					if (hit(coor.x, coor.y, (player.wselect == 1) * 12 + (player.wselect == 2) * 15 + (player.wselect == 3) * 5, player.wselect == 2)) {
+						Hit = true;
+						break;
+					}
+					else {
+						coor.x += dx;
+						coor.y += dy;
+					}
+				}
+				player.weapon[player.wselect]--;
+				if (!Hit) {
+					coor.x -= dx;
+					coor.y -= dy;
+					weapon[player.floor][weapons[player.floor]].coor.x = coor.x;
+					weapon[player.floor][weapons[player.floor]].coor.y = coor.y;
+					weapon[player.floor][weapons[player.floor]].number = 1;
+					weapon[player.floor][weapons[player.floor]].type = player.wselect;
+					weapons[player.floor]++;
+				}
+			}
 		}
 
 		check_visibility();
 		if (g_c == 0) {
 			check_loot();
 		}
+		//monster_attack();
+		monster_movement();
+		monster_awareness_check();
 		gprint_all();
 
 		f_c = (!f_c) && (c == 'f');
