@@ -77,12 +77,11 @@ char *rget_password(int x, int y, char *validch, int min, int max, int hide) {
 			line[0] = 1;
 			return line;
 		}
-		else if (c == 27) {
-			line[0] = 0;
-			return line;
-		}
 		else if (c == 10) { // '\n'
 			break;
+		}
+		else if (c == 265) {
+			hide = 1 - hide;
 		}
 		else if ((c < 0 || c >= 128) && c != 263) {
 			invalidch_error();
@@ -108,17 +107,26 @@ char *rget_password(int x, int y, char *validch, int min, int max, int hide) {
 
 				line[size] = '\0';
 				sline[size] = '\0';
-				print_in(x, y - size / 2, sline, 1, 0);
+				if (hide == 1)
+					print_in(x, y - size / 2, sline, 1, 0);
+				else
+					print_in(x, y - size / 2, line, 1, 0);
 				print_all();
 			}
 			else {
 				invalidch_error();
 			}
 		}
-		print_in(x, y - size / 2, sline, 1, 0);
+		if (hide == 1)
+			print_in(x, y - size / 2, sline, 1, 0);
+		else
+			print_in(x, y - size / 2, line, 1, 0);
 		print_all();
 	}
-	print_in(x, y - size / 2, sline, 0, 0);
+	if (hide == 1)
+		print_in(x, y - size / 2, sline, 0, 0);
+	else
+		print_in(x, y - size / 2, line, 0, 0);
 	return line;
 }
 
@@ -160,6 +168,7 @@ User* sign_in() {
 	}
 
 	print_inhdr(6, "What's your password?", head_delay);
+	print_inhdr(8, "Press F1 to hide/reveal your password.", head_delay);
 	print_all();
 	char *password = rget_password(7, Y / 2, normalch, 7, 30, 1);
 	if (password[0] == 1) {

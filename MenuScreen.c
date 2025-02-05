@@ -5,11 +5,12 @@ extern char map[X][Y];
 extern int cons[X][Y], delayed[X][Y];
 
 void init_screen() {
-	setlocale(LC_ALL, "");
 	initscr();
 	noecho();
 	keypad(stdscr, TRUE);
 	cbreak();
+
+
 	for (int i = 0; i < X; i++) {
 		for (int j = 0; j < Y; j++) {
 			map[i][j] = ' ';

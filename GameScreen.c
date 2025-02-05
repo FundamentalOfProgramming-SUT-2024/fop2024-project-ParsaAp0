@@ -34,7 +34,6 @@ void ginit_screen() {
 	noecho();
 	keypad(stdscr, TRUE);
 	cbreak();
-	// init_pair(1, COLOR_BLACK, COLOR_WHITE);
 }
 
 void gprint_all() {
@@ -457,4 +456,87 @@ void not_a_direction_massege() {
 		mvaddch(0, i, ' ');
 	}
 	mvprintw(0, 0, "The button you pressed is not the direction.");
+}
+
+void new_floor_massege(int f) {
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "You entered new floor %d!", f + 1);
+}
+
+void new_room_massege() {
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "You entered new room!");
+}
+
+void collected_gold_massege(int g) {
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	mvprintw(0, 0, "You collected %d golds!", g);
+}
+
+void collected_food(int f) {
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	if (f == 0 || f == 3) {
+		mvprintw(0, 0, "You collected normal food!");
+	}
+	else if (f == 1) {
+		mvprintw(0, 0, "You collected supreme food!");
+	}
+	else if (f == 2) {
+		mvprintw(0, 0, "You collected magic food!");
+	}
+}
+
+void collected_spell(int s) {
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	if (s == 0) {
+		mvprintw(0, 0, "You collected health spell!");
+	}
+	else if (s == 1) {
+		mvprintw(0, 0, "You collected speed spell!");
+	}
+	else if (s == 2) {
+		mvprintw(0, 0, "You collected power spell!");
+	}
+}
+
+void collected_weapon(int type, int number) {
+	for (int i = 0; i < Y; i++) {
+		mvaddch(0, i, ' ');
+	}
+	if (type == 0) {
+		mvprintw(0, 0, "It is not supposed to happen /:");
+	}
+	else if (type == 1) {
+		if (number > 1)
+			mvprintw(0, 0, "You collected %d daggers.", number);
+		else
+			mvprintw(0, 0, "You collected a dagger.");
+	}
+	else if (type == 2) {
+		if (number > 1)
+			mvprintw(0, 0, "You collected %d magic wands.", number);
+		else
+			mvprintw(0, 0, "You collected a magic wand.");
+	}
+	else if (type == 3) {
+		if (number > 1)
+			mvprintw(0, 0, "You collected %d arrows.", number);
+		else
+			mvprintw(0, 0, "You collected an arrow.");
+
+	}
+	else if (type == 4) {
+		mvprintw(0, 0, "You collected a sword.");
+
+	}
 }

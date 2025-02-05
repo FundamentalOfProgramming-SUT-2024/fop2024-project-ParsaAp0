@@ -1,6 +1,17 @@
 #include "header.h"
 // Getting segment fault for the sixth time of making new map
 int main() {
+	setlocale(LC_ALL, "");
+	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+		printw("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+		return 0;
+	}
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+		printw("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+		return 0;
+	}
+	
 	init_screen();
 
 	int first_time = true;
@@ -69,6 +80,9 @@ int main() {
 
 
 
+	Mix_CloseAudio();
+	Mix_Quit();
+	SDL_Quit();
 	end_screen();
 	return 0;
 }

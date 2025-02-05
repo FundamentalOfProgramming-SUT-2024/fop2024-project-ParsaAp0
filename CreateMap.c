@@ -660,7 +660,7 @@ void create_stuff(int f) {
 	}
 
 	// Normal Food
-	num = 7;
+	num = 8;
 	while (num--) {
 		set_random_point(&food[f][foods[f]].coor, f);
 		food[f][foods[f]].type = 0;
@@ -668,7 +668,7 @@ void create_stuff(int f) {
 	}
 
 	// Supreme Food
-	num = 3;
+	num = 4;
 	while (num--) {
 		set_random_point(&food[f][foods[f]].coor, f);
 		food[f][foods[f]].type = 1;
@@ -676,7 +676,7 @@ void create_stuff(int f) {
 	}
 
 	// Magic Food
-	num = 2;
+	num = 3;
 	while (num--) {
 		set_random_point(&food[f][foods[f]].coor, f);
 		food[f][foods[f]].type = 2;
@@ -684,7 +684,7 @@ void create_stuff(int f) {
 	}
 	
 	// Rotten Food
-	num = 2;
+	num = 3;
 	while (num--) {
 		set_random_point(&food[f][foods[f]].coor, f);
 		food[f][foods[f]].type = 3;

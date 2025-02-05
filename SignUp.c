@@ -168,6 +168,23 @@ int valid_password(char *line) {
 	return capc && smallc && digc;
 }
 
+void get_random_password(char *line, int min, int max) {
+	int sz = min + rand() % (max - min + 1);
+	line[sz] = '\0';
+	for (int i = 0; i < sz; i++) {
+		int x = rand() % (26 + 26 + 10);
+		if (x < 26) {
+			line[i] = 'A' + x;
+		}
+		else if (x < 52) {
+			line[i] = 'a' + x - 26;
+		}
+		else {
+			line[i] = '0' + x - 52;
+		}
+	}
+}
+
 char *get_password(int x, int y, char *validch, int min, int max, int hide) {
 	char *line = (char *) calloc(Y, sizeof(char));
 	char *sline = (char *) calloc(Y, sizeof(char));
@@ -178,6 +195,17 @@ char *get_password(int x, int y, char *validch, int min, int max, int hide) {
 		if (c == 27) { // Esc
 			line[0] = 0;
 			return line;
+		}
+		else if (c == 265) {
+			hide = 1 - hide;
+		}
+		else if (c == 266) {
+			get_random_password(line, min, max);
+			size = strlen(line);
+			for (int i = 0; i < size; i++) {
+				sline[i] = '*';
+			}
+			sline[size] = '\0';
 		}
 		else if (c == 10) { // '\n'
 			if (size < min) {
@@ -219,17 +247,27 @@ char *get_password(int x, int y, char *validch, int min, int max, int hide) {
 
 				line[size] = '\0';
 				sline[size] = '\0';
-				print_in(x, y - size / 2, sline, 1, 0);
+				if (hide == 1)
+					print_in(x, y - size / 2, sline, 1, 0);
+				else
+					print_in(x, y - size / 2, line, 1, 0);
 				print_all();
 			}
 			else {
 				invalidch_error();
 			}
 		}
-		print_in(x, y - size / 2, sline, 1, 0);
+		if (hide == 1)
+			print_in(x, y - size / 2, sline, 1, 0);
+		else
+			print_in(x, y - size / 2, line, 1, 0);
 		print_all();
 	}
-	print_in(x, y - size / 2, sline, 0, 0);
+
+	if (hide == 1)
+		print_in(x, y - size / 2, sline, 0, 0);
+	else
+		print_in(x, y - size / 2, line, 0, 0);
 	return line;
 }
 
@@ -255,6 +293,9 @@ void sign_up() {
 	}
 
 	print_inhdr(8, "Type a strong password!", head_delay);
+	print_inhdr(11, "Press F1 to hide/reveal your password.", head_delay);
+	print_inhdr(12, "Press F2 to make a random password.", head_delay);
+
 	print_all();
 	char *password = get_password(9, Y / 2, normalch, 7, 30, 1);
 	if (strlen(password) == 0) {

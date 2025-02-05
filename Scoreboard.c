@@ -23,10 +23,10 @@ void print_hero(int number, char* title, int color, User user, int bold, int nti
 	}
 	else {
 		int diff = ntime - user.regs, sec = diff % 60, min = diff / 60 % 60, hour = diff / 3600 % 24, day = diff / 3600 / 24;
-		sprintf(res, "%d: The %s --> %20s  %5d %5d                                      %3d, %02d:%02d:%02d       %d\n", number, title, user.name, user.point, user.gold, day, hour, min, sec, user.wins);
+		sprintf(res, "%2d: The %s --> %20s  %5d %5d                                      %3d, %02d:%02d:%02d       %d\n", number, title, user.name, user.point, user.gold, day, hour, min, sec, user.wins);
 		for (int i = 0; i < strlen(res); i++) {
 			usleep(error_delay);
-			mvaddch(4 + number * 2, 1 + i, res[i]);
+			mvaddch(4 + number * 2, i, res[i]);
 			refresh();
 		}
 	}

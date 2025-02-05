@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <locale.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 #define error_delay 10000
 #define head_delay 50000
@@ -228,6 +230,12 @@ void spell_inventory_empty_massege();
 void spell_inventory_full_massege();
 void not_enough_ammo_to_attack_massege();
 void not_a_direction_massege();
+void new_floor_massege(int f);
+void new_room_massege();
+void collected_gold_massege(int g);
+void collected_food(int f);
+void collected_spell(int s);
+void collected_weapon(int type, int number);
 
 #endif
 

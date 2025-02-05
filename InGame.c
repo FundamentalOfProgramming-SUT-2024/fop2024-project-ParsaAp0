@@ -29,6 +29,9 @@ Spell spell[FLOOR_NUMBER][1000];
 Weapon weapon[FLOOR_NUMBER][1000];
 Monster monster[FLOOR_NUMBER][1000];
 
+Mix_Music *Music;
+int setting_diff, setting_color, setting_song;
+
 int power_boost = 0;
 int speed_boost = 0;
 int health_boost = 0;
@@ -92,11 +95,14 @@ static void reset(int k) {
 		gpaths[k][i].r1 = gpaths[k][i].r2 = gpaths[k][i].size = 0;
 	}
 	psize[k] = 0;
-	golds[k] = foods[k] = spells[k] = weapons[k] = 0;
+	golds[k] = foods[k] = spells[k] = weapons[k] = monsters[k] = 0;
+	floor_seen[k] = 0;
 }
 
 static void reset_all() {
+	Visibility_power = 0;
 	player.wselect = 0;
+	player.satt = 0;
 	power_boost = speed_boost = health_boost = 0;
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		reset(k);
@@ -112,17 +118,21 @@ void decrease_hunger(int amount) {
 }
 
 void init_map(FILE *fmap) {
-	FILE *fset = fopen("setting.txt", "r");
-	int difficulty, player_color;
-	if (fset == NULL) {
-		difficulty = 1;
-		player_color = 0;
+	FILE *sett = fopen("setting.txt", "r");
+	if (sett == NULL) {
+		setting_diff = 1;
+		setting_color = 0;
+		setting_song = 3;
 	}
 	else {
-		fscanf(fset, "%*s %d %*s %d", &difficulty, &player_color);
-		fclose(fset);
+		fscanf(sett, "%*s %d %*s %d %*s %d", &setting_diff, &setting_color, &setting_song);
+		fclose(sett);
 	}
-
+	if (setting_song != 3) {
+		char *songs[4] = {"Musics/All of The Freedoms - Kohta Yamamoto.mp3", "Musics/Footsteps of Doom - Kohta Yamamoto.mp3", "Musics/MAN-Child - Kohta Yamamoto.mp3"};
+		Music = Mix_LoadMUS(songs[setting_song]);
+		Mix_PlayMusic(Music, -1);
+	}
 
 	fscanf(fmap, "%*s %*s %d %d %d", &player.floor, &player.coor.x, &player.coor.y); // Floor, x, y
 	fscanf(fmap, "%*s %*s %d %d %d %d", &player.health, &player.hunger, &player.fsize, &player.ssize); // health, hunger, fsize, ssize;
@@ -140,8 +150,9 @@ void init_map(FILE *fmap) {
 
 	// Colors: "White", "Red", "Green", "Blue", "Magenta", "Cyan", "Yellow"
 	int colid[7] = {7, 1, 2, 4, 163, 14, 220};
-	player.att[player.satt++] = COLOR_PAIR(colid[player_color]);
+	player.att[player.satt++] = COLOR_PAIR(colid[setting_color]);
 	// Reading rooms and paths.
+
 	for (int k = 0; k < FLOOR_NUMBER; k++) {
 		fscanf(fmap, "%*s");
 		for (int j = 0; j < ROOM_NUMBER; j++) {
@@ -258,7 +269,13 @@ void save_map(char* name) {
 void check_visibility() {
 	if (Visibility_power == -1) Visibility_power = 0;
 	int i = inside_room(player.coor, player.floor);
+
 	if (i != -1) {
+		int xi = (grooms[player.floor][i].coor[0].x + grooms[player.floor][i].coor[1].x) / 2;
+		int yi = (grooms[player.floor][i].coor[0].y + grooms[player.floor][i].coor[1].y) / 2;
+		if (visibility[player.floor][xi][yi] == 0 && grooms[player.floor][i].type != 3) {
+			new_room_massege();
+		}
 		if (grooms[player.floor][i].type == 3) {
 			// This is a nightmare room
 			if (Visibility_power == 0) {
@@ -349,6 +366,7 @@ void check_loot() {
 	// Gold (Normal and black)
 	for (int i = 0; i < golds[player.floor]; i++) {
 		if (player.coor.x == gold[player.floor][i].coor.x && player.coor.y == gold[player.floor][i].coor.y) {
+			collected_gold_massege(gold[player.floor][i].value);
 			player.gold += gold[player.floor][i].value;
 			player.point += gold[player.floor][i].value;
 			memcpy(gold[player.floor] + i, gold[player.floor] + golds[player.floor] - 1, sizeof(Gold));
@@ -366,6 +384,7 @@ void check_loot() {
 				break;
 			}
 			if (player.fsize < 5) {
+				collected_food(food[player.floor][i].type);
 				player.finventory[player.fsize++] = food[player.floor][i].type;
 				memcpy(food[player.floor] + i, food[player.floor] + foods[player.floor] - 1, sizeof(Food));
 				foods[player.floor]--;
@@ -386,6 +405,7 @@ void check_loot() {
 				break;
 			}
 			if (player.ssize < 5) {
+				collected_spell(spell[player.floor][i].type);
 				player.sinventory[player.ssize++] = spell[player.floor][i].type;
 				memcpy(spell[player.floor] + i, spell[player.floor] + spells[player.floor] - 1, sizeof(Spell));
 				spells[player.floor]--;
@@ -406,6 +426,7 @@ void check_loot() {
 				i--;
 				// break;
 			}
+			collected_weapon(weapon[player.floor][i].type, weapon[player.floor][i].number);
 			player.weapon[weapon[player.floor][i].type] += weapon[player.floor][i].number;
 			memcpy(weapon[player.floor] + i, weapon[player.floor] + weapons[player.floor] - 1, sizeof(Weapon));
 			weapons[player.floor]--;
@@ -593,6 +614,11 @@ void end_game_win() {
 	getch();
 }
 
+void end_game_loose() {
+	mvprintw(0, 0, "You lost!!! Press any key the go back to menu.");
+	getch();
+}
+
 int end_game_check() {
 	if (player.floor != 3 || inside_room(player.coor, player.floor) == -1)
 		return false;
@@ -608,14 +634,11 @@ int end_game_check() {
 
 void monster_attack() {
 	// int f = player.floor, ms = monsters[f];
-	int damage[5] = {20, 25, 30, 30, 40};
+	int damage[5] = {15, 20, 25, 30, 30};
 	for (int i = 0; i < monsters[player.floor]; i++) {
 		if (get_move_distance(monster[player.floor][i].coor, player.coor) <= 1) {
 			player.health -= damage[monster[player.floor][i].type];
 		}
-	}
-	if (player.health <= 0) {
-		mvprintw(0, 0, "You Are DeaD!!!");
 	}
 }
 
@@ -676,12 +699,13 @@ void run_game(User *user, char *map_name) {
 	ginit_screen();
 	
 	
-	bool running = true, f_c = 0, g_c = 0, game_move = 0;
+	bool running = true, f_c = 0, g_c = 0, space_c = 0, game_move = 0;
+	int prv_dir = 0;
 	floor_seen[player.floor] = 1;
 	check_visibility();
 	gprint_all();
 	while (running) {
-		int c = getch();
+		int c = getch(), new_floor = 0;
 		clear();
 		if (c == 27) { // Esc
 			running = false;
@@ -835,7 +859,11 @@ void run_game(User *user, char *map_name) {
 			player.floor++;
 			player.coor.x = inports[player.floor].x;
 			player.coor.y = inports[player.floor].y;
+			if (floor_seen[player.floor] == 0) {
+				new_floor = 1;
+			}
 			floor_seen[player.floor] = 1;
+			
 		}
 		else if (c == KLEFT && player.floor > 0 && player.coor.x == inports[player.floor].x && player.coor.y == inports[player.floor].y) {
 			player.floor--;
@@ -858,7 +886,58 @@ void run_game(User *user, char *map_name) {
 			gprint_all();
 			continue;
 		}
+		else if (c == 'a' && space_c == 1) {
+			gprint_all();
+			if (player.weapon[player.wselect] == 0) {
+				not_enough_ammo_to_attack_massege();
+				continue;
+			}
+			
+			player.weapon[player.wselect]--;
+
+			int dx = 1 - (prv_dir - '1') / 3, dy = (prv_dir - '1') % 3 - 1, dist = (player.wselect == 2) * 5 + 5;
+			Coor coor = {player.coor.x + dx, player.coor.y + dy};
+			weapon[player.floor][weapons[player.floor]].coor.x = coor.x;
+			weapon[player.floor][weapons[player.floor]].coor.y = coor.y;
+			weapon[player.floor][weapons[player.floor]].number = 1;
+			weapon[player.floor][weapons[player.floor]].type = player.wselect;
+			weapons[player.floor]++;
+
+
+			int Hit = false, rid = inside_room(player.coor, player.floor);
+			while (dist-- && valid_coor(coor, rid, player.floor)) {
+				weapon[player.floor][weapons[player.floor] - 1].coor.x = coor.x;
+				weapon[player.floor][weapons[player.floor] - 1].coor.y = coor.y;
+				if (hit(coor.x, coor.y, (player.wselect == 1) * 12 + (player.wselect == 2) * 15 + (player.wselect == 3) * 5, player.wselect == 2)) {
+					Hit = true;
+					break;
+				}
+				else {
+					gprint_all();
+					refresh();
+					usleep(50000);
+					coor.x += dx;
+					coor.y += dy;
+				}
+			}
+			if (Hit) {
+				weapons[player.floor]--;
+			}
+			else {
+				for (int i = 0; i < weapons[player.floor] - 1; i++) {
+					if (weapon[player.floor][i].type == player.wselect && weapon[player.floor][i].coor.x == weapon[player.floor][weapons[player.floor] - 1].coor.x && weapon[player.floor][i].coor.y == weapon[player.floor][weapons[player.floor] - 1].coor.y) {
+						weapon[player.floor][i].number += player.wselect && weapon[player.floor][i].number;
+						weapons[player.floor]--;
+						break;
+					}
+				}
+			}
+			game_move = 1;
+		}
 		else if (c == ' ') {
+			if (inside_room(player.coor, player.floor) == -1) {
+				continue;
+			}
 			if (player.wselect == 0 || player.wselect == 4) {
 				int dx[8] = {1, 1, 1, 0, 0, -1, -1, -1};
 				int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
@@ -877,6 +956,7 @@ void run_game(User *user, char *map_name) {
 					not_a_direction_massege();
 					continue;
 				}
+				prv_dir = c2;
 				player.weapon[player.wselect]--;
 
 				int dx = 1 - (c2 - '1') / 3, dy = (c2 - '1') % 3 - 1, dist = (player.wselect == 2) * 5 + 5;
@@ -907,6 +987,15 @@ void run_game(User *user, char *map_name) {
 				if (Hit) {
 					weapons[player.floor]--;
 				}
+				else {
+					for (int i = 0; i < weapons[player.floor] - 1; i++) {
+						if (weapon[player.floor][i].type == player.wselect && weapon[player.floor][i].coor.x == weapon[player.floor][weapons[player.floor] - 1].coor.x && weapon[player.floor][i].coor.y == weapon[player.floor][weapons[player.floor] - 1].coor.y) {
+							weapon[player.floor][i].number += player.wselect && weapon[player.floor][i].number;
+							weapons[player.floor]--;
+							break;
+						}
+					}
+				}
 			}
 			game_move = 1;
 		}
@@ -915,6 +1004,9 @@ void run_game(User *user, char *map_name) {
 		}
 
 		check_visibility();
+		if (new_floor == 1) {
+			new_floor_massege(player.floor);
+		}
 		if (g_c == 0) {
 			check_loot();
 		}
@@ -926,7 +1018,7 @@ void run_game(User *user, char *map_name) {
 		if (game_move) {
 			monster_attack();
 			monster_movement();
-			if (player.hunger >= 80) {
+			if (player.hunger >= 70) {
 				player.health += 1 + (health_boost > 0);
 				if (player.health > 100)
 					player.health = 100;
@@ -935,14 +1027,26 @@ void run_game(User *user, char *map_name) {
 			if (speed_boost > 0) speed_boost--;
 			if (power_boost > 0) power_boost--;
 		}
+		if (player.health <= 0) {
+			end_game_loose();
+			break;
+		}
 		monster_awareness_check();
 		gprint_all();
 
 		f_c = (!f_c) && (c == 'f');
-		g_c = (!f_c) && (c == 'g');
+		g_c ^= (c == 'g');
+		space_c = (prv_dir != 0) && (c == ' ' || c == 'a');
+		if (space_c == 0) {
+			prv_dir = 0;
+		}
 		game_move = 0;
 	}
 
+	if (setting_song != 3) {
+		Mix_PauseMusic();
+		Mix_FreeMusic(Music);
+	}
 	save_map(map_name);
 	gend_screen();
 	reset_all();
