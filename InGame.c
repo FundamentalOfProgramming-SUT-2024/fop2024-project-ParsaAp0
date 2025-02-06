@@ -444,10 +444,12 @@ void use_food(int id) {
 			player.health += MAX_HEALTH / 5;
 			break;
 		case 1:
+			power_boost += 10;
 			player.hunger += MAX_HUNGER / 2;
 			player.health += MAX_HEALTH / 4;
 			break;
 		case 2:
+			speed_boost += 10;
 			player.hunger += MAX_HUNGER / 3;
 			player.health += MAX_HEALTH / 5;
 			break;
